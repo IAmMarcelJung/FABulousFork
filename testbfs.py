@@ -2,24 +2,23 @@
 import sys
 import os
 import unittest
+import time
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from search_path.bfs import SearchPath
-from fabric_generator.file_parser import parseMatrix
-from search_path.utils import transpose_csv, create_data
 from search_path.graph import *
 
 test_file = "test_features.txt"
 
 class TestBfs(unittest.TestCase):
-    best = sp.Path(list(), sys.maxsize)
-    current_path = sp.Path(list(), 0)
 
     def setUp(self):
-        self.best = self.sp.Path(list(), sys.maxsize)
-        self.current_path = self.sp.Path(list(), 0)
+        self.startTime = time.time()
+
     def tearDown(self):
+        t = time.time() - self.startTime
+        print('%s: %.6f' % (self.id(), t))
+
         #Clean up
         if os.path.exists(test_file):
             os.remove(test_file)
