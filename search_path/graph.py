@@ -1,74 +1,22 @@
 #!/bin/python
 import heapq
+from collections import deque
+from typing import *
+#import pdb; pdb.set_trace()
 
-class PipeNode:
-    def __init__(self, source_tile, source, destination_tile, sink):
-        self.source_tile = source_tile
-        self.source = source
-        self.destination_tile = destination_tile
-        self.sink = sink
+class Node:
+    def __init__(self, internal_parents: Set, internal_children: Set, external_parents: Set, external_children: Set):
+        self.internal_parents = internal_parents
+        self.internal_children = internal_children
+        self.external_parents = external_parents
+        self.external_children = external_children
+        self.tile = Tile(0,0)
+        self.name = ""
 
-class PipeGraph:
-    def __init__(self):
-        self.nodes = {}  # Dictionary to store pipe nodes
-        self.edges = {}  # Dictionary to store edges between nodes
-
-    def add_node(self, pipe_node):
-        if pipe_node.source_tile not in self.nodes:
-            self.nodes[pipe_node.source_tile] = []
-        self.nodes[pipe_node.source_tile].append(pipe_node)
-        # Add an edge from source to destination
-        if pipe_node.destination_tile not in self.edges:
-            self.edges[pipe_node.destination_tile] = []
-        self.edges[pipe_node.destination_tile].append((pipe_node.source_tile, pipe_node.source))
-
-    def find_path(self, start_tile, start_node, end_tile, end_node):
-        # Initialize a set to keep track of visited nodes
-        visited = set()
-        # Initialize a dictionary to store the shortest distance to each node
-        distances = {node: float('inf') for node in self.nodes}
-        # Set the distance to the start node to zero
-        distances[start_tile] = {start_node: 0}
-
-        # Create a priority queue to store nodes with their distances
-        priority_queue = []
-        for node in self.nodes[start_tile]:
-            print(node.source)
-            print(node.sink)
-            if node.source == start_node:
-                priority_queue.append((distances[start_tile][node.source], start_tile, node.source))
-
-        while priority_queue:
-            current_distance, current_tile, current_node = heapq.heappop(priority_queue)
-
-            # If the current node is the destination, we found the path
-            if current_tile == end_tile and current_node == end_node:
-                path = []
-                while current_tile != start_tile:
-                    path.append((current_tile, current_node))
-                    for neighbor_tile, neighbor_node in self.edges[current_tile]:
-                        if neighbor_node == current_node:
-                            current_tile = neighbor_tile
-                            current_node = None
-                            break
-                path.append((start_tile, start_node))
-                path.reverse()
-                return path
-
-            # Mark the current node and tile as visited
-            visited.add((current_tile, current_node))
-
-            # Iterate through neighbors and update their distances
-            for neighbor_tile, neighbor_node in self.edges[current_tile]:
-                if (neighbor_tile, neighbor_node) not in visited:
-                    new_distance = current_distance + 1
-                    print(type(distances[neighbor_node]))
-                    if new_distance < distances[neighbor_tile]:
-                        print(distances[neighbor_tile][neighbor_node])
-                        distances[neighbor_tile] = new_distance
-                        for node in self.nodes[neighbor_tile]:
-                            if node.source == neighbor_node:
-                                priority_queue.append((new_distance, neighbor_tile, node.source))
+class Tile:
+    def __init__(self, x: int, y: int):
+        self.x = x
+        self.y = y
 
 def create_graph_from_file(pip_file):
     graph = PipeGraph()
@@ -77,11 +25,126 @@ def create_graph_from_file(pip_file):
             if line.startswith('#'):
                 continue
             # Split the line into its components
-            source_tile, source, destination_tile, sink, dnc, feature = line.split(',')
+            source_tile, sink, destination_tile, source, dnc, feature = line.split(',')
             # Create a pipe node and add it to the graph
-            pipe_node = PipeNode(source_tile, source, destination_tile, sink)
+            pipe_node = PipeNode(source_tile, source, destination_tile, sink, _)
             graph.add_node(pipe_node)
     return graph
+
+def tile_to_str(tile: Tile):
+    return f"X{tile.x}Y{tile.y}"
+
+def str_to_tile(tile_str: str):
+    parts = tile_str.split('Y')
+    x = parts[0].strip('X')
+    y = parts[1].strip('Y')
+    return Tile(int(x), int(y))
+
+
+def get_nodes_from_file_for_tile(pip_file: str, tile: Tile):
+    nodes = set()
+    tile_str = tile_to_str(tile)
+    next_tile = Tile(tile.x + 1, tile.y)
+    next_tile_str = tile_to_str(next_tile)
+    is_current_tile = False
+    with open(pip_file) as f:
+        for line in f:
+            # Reached features of next tile, all features of current tile read
+            if line.startswith('#') and next_tile_str in line:
+                break
+            # Reached features of the current tile
+            if is_current_tile or (tile_str in line and line.startswith("#")):
+                is_current_tile = True
+                if not line.startswith("#"):
+                    source_tile, sink, destination_tile, source, dnc, feature = line.split(',')
+                    nodes.add(sink)
+                    nodes.add(source)
+    return nodes
+
+def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set):
+    nodes = { key: Node(set(), set(), set(), set()) for key in nodes_set}
+    tile_str = tile_to_str(tile)
+    next_tile = Tile(tile.x + 1, tile.y)
+    next_tile_str = tile_to_str(next_tile)
+    is_current_tile = False
+    with open(pip_file) as f:
+        for line in f:
+            # Reached features of next tile, all features of current tile read
+            if line.startswith('#') and next_tile_str in line:
+                break
+            # Reached features of the current tile
+            if is_current_tile or (tile_str in line and line.startswith("#")):
+                is_current_tile = True
+                if not line.startswith("#"):
+                    source_tile, source, destination_tile, sink, dnc, feature = line.split(',')
+                    if source_tile == destination_tile:
+                        nodes[sink].internal_parents.add(source)
+                        nodes[source].internal_children.add(sink)
+                    else:
+                        nodes[sink].external_parents.add(source)
+                        nodes[source].external_children.add(sink)
+                    nodes[sink].name = sink
+                    nodes[sink].tile = destination_tile
+                    nodes[source].name = source
+    return nodes
+
+def append_paths(paths: List, current_node: str, graph: Dict, visited: Set):
+    new_paths = []
+    for path in paths:
+        if current_node in path:
+            for child in graph[current_node].internal_children:
+                if child not in visited and child not in path:
+                    new_list = path.copy()
+                    new_list.append(child)
+                    new_paths.append(new_list)
+    paths += new_paths
+
+def get_lists_where_last_element_matches(lists: List, elem: str):
+    result_lists = []
+    for tmplist in lists:
+        if tmplist[-1] == elem:
+            result_lists.append(tmplist)
+    return result_lists
+
+
+def bfs(graph: Dict, start_node_name: str, end_node_name: str):
+    queue = deque()
+    visited = set()
+    current_node = start_node_name
+    visited.add(current_node)
+    paths = [[start_node_name]]
+    append_paths(paths, current_node, graph, visited)
+
+    while current_node != end_node_name:
+        if graph[current_node].internal_children:
+            for child in graph[current_node].internal_children:
+                if child not in visited:
+                    queue.append(child)
+        if not queue:
+            break
+        current_node = queue.popleft()
+        append_paths(paths, current_node, graph, visited)
+        visited.add(current_node)
+
+    return get_lists_where_last_element_matches(paths, end_node_name)
+
+def create_features(path: List):
+    feature_list = []
+    for i in range(len(path[:-1])):
+        feature = f"{path[i]}.{path[i+1]}"
+        feature_list.append(feature)
+    return feature_list
+
+def append_features_to_file(features: List, file: str):
+    with open(file, 'r+') as f:
+        for line in f:
+            if line.startswith("#additional features"):
+                f.truncate()
+                break
+
+        f.write("# additional features\n")
+        for feature in features:
+            f.write(feature + '\n')
 
 if __name__ == "__main__":
     pass
