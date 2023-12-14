@@ -1,5 +1,4 @@
 #!/bin/python
-import heapq
 from collections import deque
 from typing import *
 #import pdb; pdb.set_trace()
