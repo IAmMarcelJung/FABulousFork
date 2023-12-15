@@ -139,7 +139,11 @@ def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header):
 def create_features(path: List):
     feature_list = []
     for i in range(len(path[:-1])):
-        feature = f"{path[i]}.{path[i+1]}"
+        tile = path[i].tile
+        tile_str = tile_to_str(tile)
+        source = path[i].name
+        sink = path[i+1].name
+        feature = f"{tile_str}.{source}.{sink}"
         feature_list.append(feature)
 
     return feature_list
