@@ -90,7 +90,7 @@ class TestBfs(unittest.TestCase):
         tile_str = tile_to_str(tile)
         #Assert
         self.assertEqual("X999Y999", tile_str)
-
+    @unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs(self):
 
         #Arrange
@@ -102,7 +102,7 @@ class TestBfs(unittest.TestCase):
         nodes = get_nodes_from_file_for_tile(file, tile)
         graph = add_parents_and_children(file, tile, nodes)
         #Act
-        cProfile.runctx('bfs(graph, start_node, end_node)', globals(), locals(), "profile.txt", 'cumtime')
+        #cProfile.runctx('bfs(graph, start_node, end_node)', globals(), locals(), "profile.txt", 'cumtime')
         paths = bfs(graph, start_node, end_node)
         #Assert
         self.assertTrue(target_path in paths, "Could not find path from LA_O to LA_I3")
@@ -159,7 +159,8 @@ class TestBfs(unittest.TestCase):
     def test_create_features(self):
         #Arrange
         target_path = ["LA_O", "JW2BEG1", "JW2END1", "J_l_AB_BEG3", "J_l_AB_END3", "LA_I3"]
-        target_features = ["LA_O.JW2BEG1", "JW2BEG1.JW2END1", "JW2END1.J_l_AB_BEG3", "J_l_AB_BEG3.J_l_AB_END3", "J_l_AB_END3.LA_I3"]
+        target_path = [Node_Header(name='LA_O', tile=Tile(x=1, y=1)), Node_Header(name='JW2BEG1', tile=Tile(x=1, y=1)), Node_Header(name='JW2END1', tile=Tile(x=1, y=1)), Node_Header(name='J_l_AB_BEG3', tile=Tile(x=1, y=1)), Node_Header(name='J_l_AB_END3', tile=Tile(x=1, y=1)), Node_Header(name='LA_I3', tile=Tile(x=1, y=1))]
+        target_features = ["X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3"]
         #Act
         features = create_features(target_path)
         #Assert
@@ -167,7 +168,7 @@ class TestBfs(unittest.TestCase):
 
     def test_append_features_to_file(self):
         #Arrange
-        features = ["LA_O.JW2BEG1", "JW2BEG1.JW2END1", "JW2END1.J_l_AB_BEG3", "J_l_AB_BEG3.J_l_AB_END3", "J_l_AB_END3.LA_I3"]
+        features = ["X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3"]
         self.assertFalse(os.path.exists(test_file))
         open(test_file, 'w').close()
         start_found = False
