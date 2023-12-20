@@ -1,8 +1,10 @@
 #!/bin/python
 from collections import deque
 from typing import *
+import re
 #import pdb; pdb.set_trace()
 from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class Tile:
@@ -31,17 +33,17 @@ class Node:
         self.tile = header.tile
         self.name = header.name
 
-def tile_to_str(tile: Tile):
+def tile_to_str(tile: Tile) -> str:
     return f"X{tile.x}Y{tile.y}"
 
-def str_to_tile(tile_str: str):
+def str_to_tile(tile_str: str) -> Tile:
     parts = tile_str.split('Y')
     x = parts[0].strip('X')
     y = parts[1].strip('Y')
     return Tile(int(x), int(y))
 
 
-def get_nodes_from_file_for_tile(pip_file: str, tile: Tile):
+def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
     nodes = set()
     tile_str = tile_to_str(tile)
     next_tile = Tile(tile.x + 1, tile.y)
@@ -65,7 +67,7 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile):
                     nodes.add(sink_node)
     return nodes
 
-def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set):
+def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
     nodes = {key: Node(key) for key in nodes_set}
     tile_str = tile_to_str(tile)
     next_tile = Tile(tile.x + 1, tile.y)
@@ -97,7 +99,7 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set):
                     nodes[source_node].tile = source_tile
     return nodes
 
-def append_paths(paths: List, node: Node_Header, graph: Dict, visited: Set):
+def append_paths(paths: List, node: Node_Header, graph: Dict, visited: Set) -> None:
     new_paths = []
     for path in paths:
         if node in path:
@@ -108,7 +110,7 @@ def append_paths(paths: List, node: Node_Header, graph: Dict, visited: Set):
                     new_paths.append(new_list)
     paths += new_paths
 
-def get_lists_where_last_element_matches(lists: List, elem: str):
+def get_lists_where_last_element_matches(lists: List, elem: str) -> List:
     result_lists = []
     for tmplist in lists:
         if tmplist[-1] == elem:
@@ -116,12 +118,13 @@ def get_lists_where_last_element_matches(lists: List, elem: str):
     return result_lists
 
 
-def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header):
+def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header) -> List:
     queue = deque()
     visited = set()
     current_node = start_node
     visited.add(current_node)
     paths = [[start_node]]
+    print(current_node)
     append_paths(paths, current_node, graph, visited)
 
     while current_node != end_node:
@@ -136,7 +139,7 @@ def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header):
 
     return get_lists_where_last_element_matches(paths, end_node)
 
-def create_features(path: List):
+def create_features(path: List) -> List:
     feature_list = []
     for i in range(len(path[:-1])):
         tile = path[i].tile
@@ -145,10 +148,12 @@ def create_features(path: List):
         sink = path[i+1].name
         feature = f"{tile_str}.{source}.{sink}"
         feature_list.append(feature)
+        if re.search("L[A-Z]_[1-5]", sink):
+            print(sink)
 
     return feature_list
 
-def append_features_to_file(features: List, file: str):
+def append_features_to_file(features: List, file: str) -> None:
     with open(file, 'r+') as f:
         for line in f:
             if line.startswith("#additional features"):

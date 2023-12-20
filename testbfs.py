@@ -8,8 +8,10 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from search_path.graph import *
+from search_path.utils import *
 
 test_file = "test_features.txt"
+fabric_file = "search_path/fabric.csv"
 
 class TestBfs(unittest.TestCase):
 
@@ -90,6 +92,7 @@ class TestBfs(unittest.TestCase):
         tile_str = tile_to_str(tile)
         #Assert
         self.assertEqual("X999Y999", tile_str)
+
     @unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs(self):
 
@@ -185,6 +188,57 @@ class TestBfs(unittest.TestCase):
                     index += 1
                 if line.startswith("# additional features"):
                     start_found = True
+
+    def test_get_tiles_for_fabric_return_correct_dict(self):
+        #Arrange
+
+        #Act
+        tiles = get_tiles_for_fabric(fabric_file)
+
+        #Assert
+        self.assertEqual(tiles[Tile(0, 0)], "NULL")
+        self.assertEqual(tiles[Tile(9, 0)], "N_term_RAM_IO")
+        self.assertEqual(tiles[Tile(0, 15)], "NULL")
+        self.assertEqual(tiles[Tile(9, 15)], "S_term_RAM_IO")
+        self.assertEqual(tiles[Tile(0, 1)], "W_IO")
+        self.assertEqual(tiles[Tile(1, 1)], "LUT4AB")
+
+    def test_get_all_locations_of_tile_type_LUT4AB_return_full_list(self):
+        #Arrange
+        tile_type = "LUT4AB"
+        locations_truth = ["X1Y1", "X2Y1", "X4Y1", "X5Y1", "X7Y1", "X8Y1",
+                "X1Y2", "X2Y2", "X4Y2", "X5Y2", "X7Y2", "X8Y2",
+                "X1Y3", "X2Y3", "X4Y3", "X5Y3", "X7Y3", "X8Y3",
+                "X1Y4", "X2Y4", "X4Y4", "X5Y4", "X7Y4", "X8Y4",
+                "X1Y5", "X2Y5", "X4Y5", "X5Y5", "X7Y5", "X8Y5",
+                "X1Y6", "X2Y6", "X4Y6", "X5Y6", "X7Y6", "X8Y6",
+                "X1Y7", "X2Y7", "X4Y7", "X5Y7", "X7Y7", "X8Y7",
+                "X1Y8", "X2Y8", "X4Y8", "X5Y8", "X7Y8", "X8Y8",
+                "X1Y9", "X2Y9", "X4Y9", "X5Y9", "X7Y9", "X8Y9",
+                "X1Y10", "X2Y10", "X4Y10", "X5Y10", "X7Y10", "X8Y10",
+                "X1Y11", "X2Y11", "X4Y11", "X5Y11", "X7Y11", "X8Y11",
+                "X1Y12", "X2Y12", "X4Y12", "X5Y12", "X7Y12", "X8Y12",
+                "X1Y13", "X2Y13", "X4Y13", "X5Y13", "X7Y13", "X8Y13",
+                "X1Y14", "X2Y14", "X4Y14", "X5Y14", "X7Y14", "X8Y14"]
+        tiles = get_tiles_for_fabric(fabric_file)
+
+        #Act
+        locations = get_all_locations_of_tile_type(tile_type, tiles)
+
+        #Assert
+        self.assertCountEqual(locations_truth, locations)
+
+    def test_get_all_locations_of_tile_type_NULL_return_full_list(self):
+        #Arrange
+        tile_type = "NULL"
+        locations_truth = [Tile(0, 0), Tile(0, 15)]
+        tiles = get_tiles_for_fabric(fabric_file)
+
+        #Act
+        locations = get_all_locations_of_tile_type(tile_type, tiles)
+
+        #Assert
+        self.assertCountEqual(locations_truth, locations)
 
 if __name__ == '__main__':
     unittest.main()
