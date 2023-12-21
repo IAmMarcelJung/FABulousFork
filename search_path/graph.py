@@ -1,30 +1,27 @@
 #!/bin/python
+import re
+from more_itertools import peekable
 from collections import deque
 from typing import *
-import re
-#import pdb; pdb.set_trace()
 from dataclasses import dataclass
+from tqdm import tqdm
 
+#import pdb; pdb.set_trace()
 
-@dataclass(frozen=True)
-class Tile:
-    '''def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
-        '''
-    x: int
-    y: int
+from search_path.tile import *
+from search_path.utils import *
 
 @dataclass(frozen=True)
 class Node_Header:
-    '''def __init__(self, name: str, tile: Tile):
-        self.tile = tile
-        self.name = name
-        '''
+    """Defines a node header with the node name and the tile of the node."""
     name: str
     tile: Tile
 
 class Node:
+    """
+    Defines a node. Like a node header, a node has a name and is associated to a tile.
+    It also has both internal and external parent and child nodes.
+    """
     def __init__(self, header: Node_Header):
         self.internal_parents = set()
         self.internal_children = set()
@@ -33,21 +30,30 @@ class Node:
         self.tile = header.tile
         self.name = header.name
 
-def tile_to_str(tile: Tile) -> str:
-    return f"X{tile.x}Y{tile.y}"
-
 def str_to_tile(tile_str: str) -> Tile:
+    """Create a tile from a string.
+
+    :param str tile_str: The tile as a string to be converted.
+    :return: The tile string converted to a Tile.
+    :rtype: Tile
+    """
     parts = tile_str.split('Y')
     x = parts[0].strip('X')
     y = parts[1].strip('Y')
     return Tile(int(x), int(y))
 
-
 def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
+    """Extract all nodes for the given tile from a given pip file
+
+    :param str pip_file: The pip file where to extract the nodes from.
+    :param Tile tile: The tile for which to extract the nodes.
+    :return The nodes extracted from the pip file for the given tile.
+    :rtype Set
+    """
     nodes = set()
-    tile_str = tile_to_str(tile)
+    tile_str = tile.to_string()
     next_tile = Tile(tile.x + 1, tile.y)
-    next_tile_str = tile_to_str(next_tile)
+    next_tile_str = next_tile.to_string()
     is_current_tile = False
     with open(pip_file) as f:
         for line in f:
@@ -55,9 +61,9 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
             if line.startswith('#') and next_tile_str in line:
                 break
             # Reached features of the current tile
-            if is_current_tile or (tile_str in line and line.startswith("#")):
+            if is_current_tile or (tile_str in line and line.startswith('#')):
                 is_current_tile = True
-                if not line.startswith("#"):
+                if not line.startswith('#'):
                     source_tile, source, sink_tile, sink, dnc, feature = line.split(',')
                     source_tile = str_to_tile(source_tile)
                     sink_tile = str_to_tile(sink_tile)
@@ -68,10 +74,17 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
     return nodes
 
 def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
+    """Add the parent and the child nodes to all nodes.
+
+    :param str pip_file: The pip file where to extract the child and parent nodes from.
+    :param Tile tile: The tile for which to add the child and parent nodes to nodes.
+    :param Set nodes_set: All previously created nodes.
+    :return All nodes associated with name, tile, parents and children, both internal and external.
+    """
     nodes = {key: Node(key) for key in nodes_set}
-    tile_str = tile_to_str(tile)
+    tile_str = tile.to_string()
     next_tile = Tile(tile.x + 1, tile.y)
-    next_tile_str = tile_to_str(next_tile)
+    next_tile_str = next_tile.to_string()
     is_current_tile = False
     with open(pip_file) as f:
         for line in f:
@@ -79,9 +92,9 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
             if line.startswith('#') and next_tile_str in line:
                 break
             # Reached features of the current tile
-            if is_current_tile or (tile_str in line and line.startswith("#")):
+            if is_current_tile or (tile_str in line and line.startswith('#')):
                 is_current_tile = True
-                if not line.startswith("#"):
+                if not line.startswith('#'):
                     source_tile, source, sink_tile, sink, dnc, feature = line.split(',')
                     source_tile = str_to_tile(source_tile)
                     sink_tile = str_to_tile(sink_tile)
@@ -99,11 +112,18 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
                     nodes[source_node].tile = source_tile
     return nodes
 
-def append_paths(paths: List, node: Node_Header, graph: Dict, visited: Set) -> None:
+def append_paths(paths: List, current_node: Node_Header, graph: Dict, visited: Set) -> None:
+    """Append the paths by new found paths
+
+    :param List paths: The previously found paths.
+    :param Node_Header current: The node for which the children should be appended to the paths.
+    :param Dict graph: The graph containing all nodes.
+    :param Set visited: All previously visited nodes.
+    """
     new_paths = []
     for path in paths:
-        if node in path:
-            for child in {*graph[node].internal_children, *graph[node].external_children}:
+        if current_node in path:
+            for child in {*graph[current_node].internal_children, *graph[current_node].external_children}:
                 if child not in visited and child not in path:
                     new_list = path.copy()
                     new_list.append(child)
@@ -111,6 +131,13 @@ def append_paths(paths: List, node: Node_Header, graph: Dict, visited: Set) -> N
     paths += new_paths
 
 def get_lists_where_last_element_matches(lists: List, elem: str) -> List:
+    """Get all lists where the last element matches the given element.
+
+    :param List lists: The lists to be searched for the element.
+    :param str elem: The elem to be searched in the list.
+    :return All lists where the element was found as the last element of the given lists.
+    :rtype List
+    """
     result_lists = []
     for tmplist in lists:
         if tmplist[-1] == elem:
@@ -119,12 +146,19 @@ def get_lists_where_last_element_matches(lists: List, elem: str) -> List:
 
 
 def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header) -> List:
+    """Do a breadth first search on the graph from the given start to end node.
+
+    :param Dict graph: The graph in which to search the path.
+    :param Node_Header start_node: The start node of the search.
+    :param Node_Header end_node: The end node of the search.
+    :return All paths with minimal length
+    :rtype List
+    """
     queue = deque()
     visited = set()
     current_node = start_node
     visited.add(current_node)
     paths = [[start_node]]
-    print(current_node)
     append_paths(paths, current_node, graph, visited)
 
     while current_node != end_node:
@@ -140,29 +174,79 @@ def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header) -> List:
     return get_lists_where_last_element_matches(paths, end_node)
 
 def create_features(path: List) -> List:
+    """ Create the FASM features from the given path.
+
+    :param List path: The path for which to create the FASM features.
+    :return All features created from the path.
+    :rtype List
+    """
     feature_list = []
-    for i in range(len(path[:-1])):
-        tile = path[i].tile
-        tile_str = tile_to_str(tile)
-        source = path[i].name
-        sink = path[i+1].name
-        feature = f"{tile_str}.{source}.{sink}"
-        feature_list.append(feature)
-        if re.search("L[A-Z]_[1-5]", sink):
-            print(sink)
+    path = peekable(path)
+    for elem in path:
+        if path:
+            current_tile = elem
+            tile = elem.tile
+            tile_str = tile.to_string()
+            source = elem.name
+
+            next_elem = path.peek()
+            sink = next_elem.name
+
+            feature = f'{tile_str}.{source}.{sink}'
+            feature_list.append(feature)
+            if re.search('L[A-Z]_[1-5]', sink):
+                print(sink)
 
     return feature_list
 
 def append_features_to_file(features: List, file: str) -> None:
+    """Append the features to an existing file.
+
+    :param List features: The features to append to the file.
+    :param str file: The file where to append the features to.
+    """
+    found_start = False
     with open(file, 'r+') as f:
-        for line in f:
-            if line.startswith("#additional features"):
+        for line in iter(f.readline, ''):
+            if '#additional features' in line:
+            #if line.startswith('#additional features'):
+                f.seek(0, 1)
                 f.truncate()
+                found_start = True
                 break
 
-        f.write("# additional features\n")
+        if not found_start:
+            f.write('#additional features\n')
         for feature in features:
             f.write(feature + '\n')
+
+def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_type: Tile.Types) -> Dict:
+    """
+    Create the connection graph for all tiles of the specified type.
+    :param str fabric_file: The file containing the fabric definition in csv format.
+    :param str pip_file: The file containing the pips.
+    :param Tile.Types tile_type: The tile type to create the graph for.
+    :return The graph created for all tiles of the type.
+    :rtype Dict
+    """
+    tiles = get_tiles_for_fabric(fabric_file)
+    tiles = get_all_locations_of_tile_type(tile_type, tiles)
+    graph = {}
+    for tile in tqdm(tiles):
+        tile_graph = create_graph_for_tile(pip_file, tile)
+        graph = graph | tile_graph
+    return graph
+
+def create_graph_for_tile(pip_file: str, tile: Tile) -> Dict:
+    """
+    Create the connection graph for a given tile.
+
+    :param str pip_file: The file containing the pips.
+    :param Tile tile: The tile to create the graph for.
+    """
+    nodes = get_nodes_from_file_for_tile(pip_file, tile)
+    graph = add_parents_and_children(pip_file, tile, nodes)
+    return graph
 
 if __name__ == "__main__":
     pass

@@ -51,7 +51,8 @@ class TestBfs(unittest.TestCase):
         tile = Tile(1,1)
         nodes = get_nodes_from_file_for_tile(file, tile)
         nodes = add_parents_and_children(file, tile, nodes)
-        tile_str = tile_to_str(tile)
+        #tile_str = tile_to_str(tile)
+        tile_str = tile.to_string()
 
         found_target = False
         name = ""
@@ -83,13 +84,13 @@ class TestBfs(unittest.TestCase):
         #Arrange
         tile = Tile(1, 1)
         #Act
-        tile_str = tile_to_str(tile)
+        tile_str = tile.to_string()
         #Assert
         self.assertEqual("X1Y1", tile_str)
         #Arrange
         tile = Tile(999, 999)
         #Act
-        tile_str = tile_to_str(tile)
+        tile_str = tile.to_string()
         #Assert
         self.assertEqual("X999Y999", tile_str)
 
@@ -186,8 +187,11 @@ class TestBfs(unittest.TestCase):
                 if start_found:
                     self.assertEqual(line.rstrip('\n'), features[index])
                     index += 1
-                if line.startswith("# additional features"):
+                if line.startswith("#additional features"):
+                    if start_found:
+                        assertFalse(start_found, 'Found multiple lines containing "#additional features"')
                     start_found = True
+        self.assertTrue(start_found)
 
     def test_get_tiles_for_fabric_return_correct_dict(self):
         #Arrange
@@ -205,21 +209,21 @@ class TestBfs(unittest.TestCase):
 
     def test_get_all_locations_of_tile_type_LUT4AB_return_full_list(self):
         #Arrange
-        tile_type = "LUT4AB"
-        locations_truth = ["X1Y1", "X2Y1", "X4Y1", "X5Y1", "X7Y1", "X8Y1",
-                "X1Y2", "X2Y2", "X4Y2", "X5Y2", "X7Y2", "X8Y2",
-                "X1Y3", "X2Y3", "X4Y3", "X5Y3", "X7Y3", "X8Y3",
-                "X1Y4", "X2Y4", "X4Y4", "X5Y4", "X7Y4", "X8Y4",
-                "X1Y5", "X2Y5", "X4Y5", "X5Y5", "X7Y5", "X8Y5",
-                "X1Y6", "X2Y6", "X4Y6", "X5Y6", "X7Y6", "X8Y6",
-                "X1Y7", "X2Y7", "X4Y7", "X5Y7", "X7Y7", "X8Y7",
-                "X1Y8", "X2Y8", "X4Y8", "X5Y8", "X7Y8", "X8Y8",
-                "X1Y9", "X2Y9", "X4Y9", "X5Y9", "X7Y9", "X8Y9",
-                "X1Y10", "X2Y10", "X4Y10", "X5Y10", "X7Y10", "X8Y10",
-                "X1Y11", "X2Y11", "X4Y11", "X5Y11", "X7Y11", "X8Y11",
-                "X1Y12", "X2Y12", "X4Y12", "X5Y12", "X7Y12", "X8Y12",
-                "X1Y13", "X2Y13", "X4Y13", "X5Y13", "X7Y13", "X8Y13",
-                "X1Y14", "X2Y14", "X4Y14", "X5Y14", "X7Y14", "X8Y14"]
+        tile_type = Tile.Types.LUT4AB
+        locations_truth = [Tile(1, 1), Tile(2, 1), Tile(4, 1), Tile(5, 1), Tile(7, 1), Tile(8, 1),
+                Tile(1, 2), Tile(2, 2), Tile(4, 2), Tile(5, 2), Tile(7, 2), Tile(8, 2),
+                Tile(1, 3), Tile(2, 3), Tile(4, 3), Tile(5, 3), Tile(7, 3), Tile(8, 3),
+                Tile(1, 4), Tile(2, 4), Tile(4, 4), Tile(5, 4), Tile(7, 4), Tile(8, 4),
+                Tile(1, 5), Tile(2, 5), Tile(4, 5), Tile(5, 5), Tile(7, 5), Tile(8, 5),
+                Tile(1, 6), Tile(2, 6), Tile(4, 6), Tile(5, 6), Tile(7, 6), Tile(8, 6),
+                Tile(1, 7), Tile(2, 7), Tile(4, 7), Tile(5, 7), Tile(7, 7), Tile(8, 7),
+                Tile(1, 8), Tile(2, 8), Tile(4, 8), Tile(5, 8), Tile(7, 8), Tile(8, 8),
+                Tile(1, 9), Tile(2, 9), Tile(4, 9), Tile(5, 9), Tile(7, 9), Tile(8, 9),
+                Tile(1, 10), Tile(2, 10), Tile(4, 10), Tile(5, 10), Tile(7, 10), Tile(8, 10),
+                Tile(1, 11), Tile(2, 11), Tile(4, 11), Tile(5, 11), Tile(7, 11), Tile(8, 11),
+                Tile(1, 12), Tile(2, 12), Tile(4, 12), Tile(5, 12), Tile(7, 12), Tile(8, 12),
+                Tile(1, 13), Tile(2, 13), Tile(4, 13), Tile(5, 13), Tile(7, 13), Tile(8, 13),
+                Tile(1, 14), Tile(2, 14), Tile(4, 14), Tile(5, 14), Tile(7, 14), Tile(8, 14)]
         tiles = get_tiles_for_fabric(fabric_file)
 
         #Act
@@ -230,7 +234,7 @@ class TestBfs(unittest.TestCase):
 
     def test_get_all_locations_of_tile_type_NULL_return_full_list(self):
         #Arrange
-        tile_type = "NULL"
+        tile_type = Tile.Types.NULL
         locations_truth = [Tile(0, 0), Tile(0, 15)]
         tiles = get_tiles_for_fabric(fabric_file)
 
