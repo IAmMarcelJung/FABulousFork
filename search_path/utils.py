@@ -1,7 +1,7 @@
 #!/bin/python
 import os
 from typing import *
-from search_path.graph import Tile
+from search_path.tile import *
 
 def transpose_csv(input_file, output_file):
     if os.path.isfile(output_file):
