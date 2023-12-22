@@ -38,8 +38,16 @@ test = Node_Header(start, Tile(1,1))
 
 tiles = get_tiles_for_fabric(fabric_file)
 tiles = get_all_locations_of_tile_type(tile_type, tiles)
+tiles = tiles[:10]
 
-paths = Parallel(n_jobs=cpu_cores)(delayed(search_in_tile)(graph, tile, start, end) for tile in tiles[:10])
+paths = list(
+    tqdm(
+        Parallel(return_as="generator", n_jobs=cpu_cores)(
+            delayed(search_in_tile)(graph, tile, start, end) for tile in tiles
+        ),
+        total=len(tiles),
+    )
+)
 features = []
 for path in paths:
     #print(path)
