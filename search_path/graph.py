@@ -1,34 +1,72 @@
 #!/bin/python
 import re
+import multiprocessing
+import pprint as pp
 from more_itertools import peekable
 from collections import deque
 from typing import *
 from dataclasses import dataclass
 from tqdm import tqdm
+from joblib import Parallel, delayed
 
 #import pdb; pdb.set_trace()
 
 from search_path.tile import *
 from search_path.utils import *
+from search_path.mapping import *
+from search_path.node import *
 
-@dataclass(frozen=True)
-class Node_Header:
+cpu_cores = max(multiprocessing.cpu_count(), 16)
+
+#uid_to_node_header_mapping = {}
+#node_header_to_uid_mapping = {}
+nodes = set()
+
+'''@dataclass(frozen=True)
+class NodeHeader():
     """Defines a node header with the node name and the tile of the node."""
     name: str
     tile: Tile
 
 class Node:
-    """
-    Defines a node. Like a node header, a node has a name and is associated to a tile.
+    """Defines a node.
+    Like a node header, a node has a name and is associated to a tile.
     It also has both internal and external parent and child nodes.
+
+    :param internal_parents: The parent nodes located on the same tile.
+    :param internal_children: The child nodes located on the same tile.
+    :param external_parents: The child nodes located on another tile.
+    :param external_children: The parent nodes located on another tile.
     """
-    def __init__(self, header: Node_Header):
+    #def __init__(self, header: NodeHeader, uid: int):
+    def __init__(self, uid: int):
         self.internal_parents = set()
         self.internal_children = set()
         self.external_parents = set()
         self.external_children = set()
-        self.tile = header.tile
-        self.name = header.name
+        #self.tile = header.tile
+        #self.name = header.name
+        #self.uid = uid
+'''
+'''
+def add_to_uid_mapping(node_header: NodeHeader, uid: int, mapping: Dict, mapping_reverse: Dict) -> bool:
+    """Add the name to the uid mapping.
+
+    :param name str: The name to add to the mapping.
+    :param uid int: The uid to add to the mapping
+    :return: True if the mapping was added, else false.
+    :rtype: bool
+    """
+    if node_header not in uid_to_node_header_mapping.values():
+        #uid_to_node_header_mapping[uid] = node_header
+        #node_header_to_uid_mapping[node_header] = uid
+        mapping[uid] = node_header
+        mapping_reverse[node_header] = uid
+        return True
+    else:
+        return False
+
+'''
 
 def str_to_tile(tile_str: str) -> Tile:
     """Create a tile from a string.
@@ -42,7 +80,7 @@ def str_to_tile(tile_str: str) -> Tile:
     y = parts[1].strip('Y')
     return Tile(int(x), int(y))
 
-def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
+def get_nodes_from_file_for_tile(pip_file: str, tile: Tile, mapping: Mapping) -> Set:
     """Extract all nodes for the given tile from a given pip file
 
     :param str pip_file: The pip file where to extract the nodes from.
@@ -50,11 +88,12 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
     :return The nodes extracted from the pip file for the given tile.
     :rtype Set
     """
-    nodes = set()
+    #nodes = set()
     tile_str = tile.to_string()
     next_tile = Tile(tile.x + 1, tile.y)
     next_tile_str = next_tile.to_string()
     is_current_tile = False
+    uid = 0
     with open(pip_file) as f:
         for line in f:
             # Reached features of next tile, all features of current tile read
@@ -64,16 +103,25 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile) -> Set:
             if is_current_tile or (tile_str in line and line.startswith('#')):
                 is_current_tile = True
                 if not line.startswith('#'):
-                    source_tile, source, sink_tile, sink, dnc, feature = line.split(',')
+                    # Do not use cost for now since its the same for all connections
+                    source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
                     source_tile = str_to_tile(source_tile)
                     sink_tile = str_to_tile(sink_tile)
-                    source_node = Node_Header(source, source_tile)
-                    sink_node = Node_Header(sink, sink_tile)
-                    nodes.add(source_node)
-                    nodes.add(sink_node)
+                    source_node = NodeHeader(source_name, source_tile)
+                    sink_node = NodeHeader(sink_name, sink_tile)
+                    #if add_to_uid_mapping(source_node, uid):
+                    if mapping.add(source_node, uid):
+                        nodes.add(uid)
+                        uid += 1
+                    #if add_to_uid_mapping(sink_node, uid):
+                    if mapping.add(sink_node, uid):
+                        nodes.add(uid)
+                        uid += 1
+                    #nodes.add(source_node)
+                    #nodes.add(sink_node)
     return nodes
 
-def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
+def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set, mapping: Mapping) -> Dict:
     """Add the parent and the child nodes to all nodes.
 
     :param str pip_file: The pip file where to extract the child and parent nodes from.
@@ -86,6 +134,10 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
     next_tile = Tile(tile.x + 1, tile.y)
     next_tile_str = next_tile.to_string()
     is_current_tile = False
+    uid = 0
+    if tile == Tile(1, 1):
+        pass
+        #print(node_header_to_uid_mapping)
     with open(pip_file) as f:
         for line in f:
             # Reached features of next tile, all features of current tile read
@@ -95,24 +147,39 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set) -> Dict:
             if is_current_tile or (tile_str in line and line.startswith('#')):
                 is_current_tile = True
                 if not line.startswith('#'):
-                    source_tile, source, sink_tile, sink, dnc, feature = line.split(',')
+                    # Do not use cost for now since its the same for all connections
+                    source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
                     source_tile = str_to_tile(source_tile)
                     sink_tile = str_to_tile(sink_tile)
-                    source_node = Node_Header(source, source_tile)
-                    sink_node = Node_Header(sink, sink_tile)
+
+                    source_node = NodeHeader(source_name, source_tile)
+                    sink_node = NodeHeader(sink_name, sink_tile)
+
+                    #source_node = NodeHeader(source_id, source_tile)
+                    #sink_node = NodeHeader(sink_id, sink_tile)
+
+                    source_id = mapping.node_header_to_uid[source_node]
+                    sink_id = mapping.node_header_to_uid[sink_node]
+
                     if source_tile == sink_tile:
-                        nodes[sink_node].internal_parents.add(source_node)
-                        nodes[source_node].internal_children.add(sink_node)
+                        #nodes[sink_node].internal_parents.add(source_node)
+                        #nodes[source_node].internal_children.add(sink_node)
+                        nodes[sink_id].internal_parents.add(source_id)
+                        nodes[source_id].internal_children.add(sink_id)
                     else:
-                        nodes[sink_node].external_parents.add(source_node)
-                        nodes[source_node].external_children.add(sink_node)
-                    nodes[sink_node].name = sink
-                    nodes[sink_node].tile = sink_tile
-                    nodes[source_node].name = source
-                    nodes[source_node].tile = source_tile
+                        nodes[sink_id].external_parents.add(source_id)
+                        nodes[source_id].internal_children.add(sink_id)
+                        #nodes[sink_node].external_parents.add(source_node)
+                        #nodes[source_node].external_children.add(sink_node)
+                    #nodes[sink_node].uid = sink_id
+                    #nodes[source_node].uid = source_id
+                    #nodes[sink_node].name = sink
+                    #nodes[source_node].name = source
+                    #nodes[sink_node].tile = sink_tile
+
     return nodes
 
-def append_paths(paths: List, current_node: Node_Header, graph: Dict, visited: Set) -> None:
+def append_paths(paths: List, current_node: NodeHeader, graph: Dict, visited: Set) -> None:
     """Append the paths by new found paths
 
     :param List paths: The previously found paths.
@@ -145,7 +212,7 @@ def get_lists_where_last_element_matches(lists: List, elem: str) -> List:
     return result_lists
 
 
-def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header) -> List:
+def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapping) -> List:
     """Do a breadth first search on the graph from the given start to end node.
 
     :param Dict graph: The graph in which to search the path.
@@ -156,7 +223,13 @@ def bfs(graph: Dict, start_node: Node_Header, end_node: Node_Header) -> List:
     """
     queue = deque()
     visited = set()
-    current_node = start_node
+    if start_node.tile == Tile(1, 1):
+        print("Test")
+        #print(node_header_to_uid_mapping)
+        #pp.pprint(type(node_header_to_uid_mapping))
+    current_node = mapping.node_header_to_uid[start_node]
+    end_node = mapping.node_header_to_uid[end_node]
+    #current_node = start_node
     visited.add(current_node)
     paths = [[start_node]]
     append_paths(paths, current_node, graph, visited)
@@ -187,10 +260,12 @@ def create_features(path: List) -> List:
             current_tile = elem
             tile = elem.tile
             tile_str = tile.to_string()
-            source = elem.name
+            #source = elem.name
+            source = elem.uid
 
             next_elem = path.peek()
-            sink = next_elem.name
+            #sink = next_elem.name
+            sink = next_elem.uid
 
             feature = f'{tile_str}.{source}.{sink}'
             feature_list.append(feature)
@@ -220,7 +295,7 @@ def append_features_to_file(features: List, file: str) -> None:
         for feature in features:
             f.write(feature + '\n')
 
-def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_type: Tile.Types) -> Dict:
+def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_type: Tile.Types, mapping: Mapping) -> Dict:
     """
     Create the connection graph for all tiles of the specified type.
     :param str fabric_file: The file containing the fabric definition in csv format.
@@ -232,20 +307,36 @@ def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_typ
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
     graph = {}
-    for tile in tqdm(tiles):
+    '''for tile in tqdm(tiles):
         tile_graph = create_graph_for_tile(pip_file, tile)
+        graph = graph | tile_graph
+
+'''
+    tile_graphs = list(
+        tqdm(
+            Parallel(return_as="generator", n_jobs=cpu_cores)(
+                delayed(create_graph_for_tile)(pip_file, tile, mapping) for tile in tiles
+            ),
+            total=len(tiles),
+        )
+    )
+
+    for tile_graph in tqdm(tile_graphs):
+        value: Node
         graph = graph | tile_graph
     return graph
 
-def create_graph_for_tile(pip_file: str, tile: Tile) -> Dict:
+
+
+def create_graph_for_tile(pip_file: str, tile: Tile, mapping: Mapping) -> Dict:
     """
     Create the connection graph for a given tile.
 
     :param str pip_file: The file containing the pips.
     :param Tile tile: The tile to create the graph for.
     """
-    nodes = get_nodes_from_file_for_tile(pip_file, tile)
-    graph = add_parents_and_children(pip_file, tile, nodes)
+    nodes = get_nodes_from_file_for_tile(pip_file, tile, mapping)
+    graph = add_parents_and_children(pip_file, tile, nodes, mapping)
     return graph
 
 if __name__ == "__main__":
