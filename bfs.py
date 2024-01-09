@@ -11,8 +11,6 @@ from search_path.mapping import *
 features = []
 cpu_cores = min(multiprocessing.cpu_count(), 16)
 
-
-
 def search_in_tile(graph: Dict, tile: Tile, start: str, end: str, mapping: Mapping) -> List:
     """Search all possible paths inside a given tile.
 
@@ -33,16 +31,18 @@ end = "LA_I3"
 pip_file = "tb_test/.FABulous/pips.txt"
 fabric_file = "search_path/fabric.csv"
 tile_type = Tile.Types.LUT4AB
+#tile_type = Tile.Types.RAM_IO
 #print(tile_type)
 mapping = Mapping()
-graph = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
+graph, mapping = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
+#print(mapping.node_header_to_uid.keys())
 test = NodeHeader(start, Tile(1,1))
-print(mapping.uid_to_node_header)
 
 tiles = get_tiles_for_fabric(fabric_file)
 tiles = get_all_locations_of_tile_type(tile_type, tiles)
-tiles = tiles[:10]
+#tiles = tiles[:10]
 
+print("Searching for possible paths:")
 paths = list(
     tqdm(
         Parallel(return_as="generator", n_jobs=cpu_cores)(
@@ -53,7 +53,8 @@ paths = list(
 )
 features = []
 for path in paths:
-    #print(path)
-    features += create_features(path[0])
+    first_path = path[0]
+    header_node_path = mapping.uid_path_to_node_header_path(first_path)
+    features += create_features(header_node_path)
 
 append_features_to_file(features, "test_append.txt")

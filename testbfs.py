@@ -112,7 +112,7 @@ class TestBfs(unittest.TestCase):
         #Assert
         self.assertEqual("X999Y999", tile_str)
 
-    @unittest.skip("Skip while testing other test, since this test takes long")
+    #@unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs(self):
         """
         Test the search of different paths.
@@ -127,9 +127,12 @@ class TestBfs(unittest.TestCase):
         file = "tb_test/.FABulous/pips.txt"
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
         graph = add_parents_and_children(file, tile, nodes, mapping)
+        target_path = mapping.node_header_path_to_uid(target_path)
+        mapping.node_header_to_uid.keys()
         #Act
         #cProfile.runctx('bfs(graph, start_node, end_node)', globals(), locals(), "profile.txt", 'cumtime')
-        paths = bfs(graph, start_node, end_node)
+        paths = bfs(graph, start_node, end_node, mapping)
+
         #Assert
         self.assertTrue(target_path in paths, "Could not find path from LA_O to LA_I3")
 
@@ -138,8 +141,9 @@ class TestBfs(unittest.TestCase):
         end_tile = Tile(0, 1)
         end_node = NodeHeader("W2MID3", end_tile)
         target_path = [NodeHeader('E6END0', tile), NodeHeader('JW2BEG3', tile), NodeHeader('JW2END3', tile), NodeHeader('W2BEG3', tile), NodeHeader('W2MID3', end_tile)]
+        target_path = mapping.node_header_path_to_uid(target_path)
         #Act
-        paths = bfs(graph, start_node, end_node)
+        paths = bfs(graph, start_node, end_node, mapping)
         #Assert
         self.assertTrue(target_path in paths, "Could not find path from E6END0 to W2MID3")
 
@@ -147,8 +151,9 @@ class TestBfs(unittest.TestCase):
         start_node = NodeHeader("E1END0", tile)
         end_node = NodeHeader("LA_I0", tile)
         target_path = [NodeHeader('E1END0', tile), NodeHeader('JN2BEG1', tile), NodeHeader('JN2END1', tile), NodeHeader('J_l_AB_BEG0', tile), NodeHeader('J_l_AB_END0', tile), NodeHeader('LA_I0', tile)]
+        target_path = mapping.node_header_path_to_uid(target_path)
         #Act
-        paths = bfs(graph, start_node, end_node)
+        paths = bfs(graph, start_node, end_node, mapping)
         #Assert
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
@@ -296,6 +301,42 @@ class TestBfs(unittest.TestCase):
 
         #Assert
         self.assertCountEqual(locations_truth, locations)
+
+    def test_uid_path_to_node_header_path(self):
+        """
+        Test the conversion of a path defined by UIDs to a path defined by node headers.
+        """
+        #Arrange
+        tile = Tile(0, 0)
+        uid_path = [0, 1, 2, 3]
+        mapping = Mapping()
+        node_header_path = [NodeHeader("A", tile), NodeHeader("B", tile), NodeHeader("C", tile), NodeHeader("D", tile)]
+        for i in range(min(len(node_header_path), len(uid_path))):
+            mapping.add(node_header_path[i], uid_path[i])
+
+        #Act
+        result = mapping.uid_path_to_node_header_path(uid_path)
+
+        #Assert
+        self.assertCountEqual(result, node_header_path)
+
+    def test_node_header_path_to_uid(self):
+        """
+        Test the conversion of a path defined by node headers to a path defined by UIDs.
+        """
+        #Arrange
+        tile = Tile(0, 0)
+        uid_path = [0, 1, 2, 3]
+        mapping = Mapping()
+        node_header_path = [NodeHeader("A", tile), NodeHeader("B", tile), NodeHeader("C", tile), NodeHeader("D", tile)]
+        for i in range(min(len(node_header_path), len(uid_path))):
+            mapping.add(node_header_path[i], uid_path[i])
+
+        #Act
+        result = mapping.uid_path_to_node_header_path(uid_path)
+
+        #Assert
+        self.assertCountEqual(result, node_header_path)
 
 if __name__ == '__main__':
     unittest.main()

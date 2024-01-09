@@ -226,15 +226,10 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     """
     queue = deque()
     visited = set()
-    if start_node.tile == Tile(1, 1):
-        print("Test")
-        #print(node_header_to_uid_mapping)
-        #pp.pprint(type(node_header_to_uid_mapping))
     current_node = mapping.node_header_to_uid[start_node]
     end_node = mapping.node_header_to_uid[end_node]
-    #current_node = start_node
     visited.add(current_node)
-    paths = [[start_node]]
+    paths = [[current_node]]
     append_paths(paths, current_node, graph, visited)
 
     while current_node != end_node:
@@ -307,13 +302,15 @@ def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_typ
     """
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
+    #tiles = get_all_locations_of_tiles(tiles)
     graph = {}
     '''for tile in tqdm(tiles):
         tile_graph = create_graph_for_tile(pip_file, tile)
         graph = graph | tile_graph
 
 '''
-    tile_graphs = list(
+    print(f"Creating graph for all tiles of type {tile_type}:")
+    tile_graphs= list(
         tqdm(
             Parallel(return_as="generator", n_jobs=cpu_cores)(
                 delayed(create_graph_for_tile)(pip_file, tile, mapping) for tile in tiles
@@ -322,10 +319,15 @@ def create_graph_for_all_tiles_of_type(fabric_file: str, pip_file: str, tile_typ
         )
     )
 
-    for tile_graph in tqdm(tile_graphs):
+    mappings = Mapping()
+    for tile_graph in tile_graphs:
         value: Node
-        graph = graph | tile_graph
-    return graph
+        graph = graph | tile_graph[0]
+        print(tile_graph[1].uid_to_node_header)
+        print(tile_graph[1].node_header_to_uid)
+        mappings.uid_to_node_header = mappings.uid_to_node_header | tile_graph[1].uid_to_node_header
+        mappings.node_header_to_uid = mappings.node_header_to_uid | tile_graph[1].node_header_to_uid
+    return graph, mappings
 
 
 
@@ -338,7 +340,7 @@ def create_graph_for_tile(pip_file: str, tile: Tile, mapping: Mapping) -> Dict:
     """
     nodes = get_nodes_from_file_for_tile(pip_file, tile, mapping)
     graph = add_parents_and_children(pip_file, tile, nodes, mapping)
-    return graph
+    return graph, mapping
 
 if __name__ == "__main__":
     pass
