@@ -131,7 +131,7 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set, mapping:
     :param Mapping mapping: The mapping between tile string and UID.
     :return All nodes associated with name, tile, parents and children, both internal and external.
     """
-    nodes = {key: Node(key) for key in nodes_set}
+    nodes = {key: Node() for key in nodes_set}
     tile_str = tile.to_string()
     next_tile = Tile(tile.x + 1, tile.y)
     next_tile_str = next_tile.to_string()
