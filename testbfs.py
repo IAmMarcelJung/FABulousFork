@@ -45,6 +45,9 @@ class TestBfs(unittest.TestCase):
 
     '''
     def test_create_graph_from_file(self):
+        """
+        Test the creation of the graph from the pips file.
+        """
         #graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
         #Arrange
         file = "tb_test/.FABulous/pips.txt"
@@ -69,6 +72,9 @@ class TestBfs(unittest.TestCase):
         self.assertTrue(found_target)
 
     def test_str_to_tile(self):
+        """
+        Test the conversion from a string to a tile.
+        """
         #Act
         tile = str_to_tile("X1Y1")
         #Assert
@@ -81,6 +87,9 @@ class TestBfs(unittest.TestCase):
         self.assertEqual(tile.y, 13)
 
     def test_tile_to_str(self):
+        """
+        Test the conversion from a tile to a string.
+        """
         #Arrange
         tile = Tile(1, 1)
         #Act
@@ -96,6 +105,9 @@ class TestBfs(unittest.TestCase):
 
     @unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs(self):
+        """
+        Test the search of different paths.
+        """
 
         #Arrange
         tile = Tile(1, 1)
@@ -131,6 +143,9 @@ class TestBfs(unittest.TestCase):
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
     def test_append_paths(self):
+        """
+        Test the appending of nodes to a path.
+        """
         #Arrange
         tile = Tile(1,1)
         paths = [[NodeHeader("LA_O", tile)]]
@@ -151,6 +166,9 @@ class TestBfs(unittest.TestCase):
         self.assertCountEqual(paths, target_paths)
 
     def test_get_lists_where_last_element_machtes(self):
+        """
+        Test the function which gets the lists where the last element matches a given element.
+        """
         #Arrange
         lists = [["1"], ["1", "2"], ["1", "2", "3"], ["1", "2", "3", "4"]]
 
@@ -161,6 +179,9 @@ class TestBfs(unittest.TestCase):
         self.assertCountEqual(result,  [["1", "2", "3", "4"]])
 
     def test_create_features(self):
+        """
+        Test the creation of features from a given path.
+        """
         #Arrange
         target_path = ["LA_O", "JW2BEG1", "JW2END1", "J_l_AB_BEG3", "J_l_AB_END3", "LA_I3"]
         target_path = [NodeHeader(name='LA_O', tile=Tile(x=1, y=1)), NodeHeader(name='JW2BEG1', tile=Tile(x=1, y=1)), NodeHeader(name='JW2END1', tile=Tile(x=1, y=1)), NodeHeader(name='J_l_AB_BEG3', tile=Tile(x=1, y=1)), NodeHeader(name='J_l_AB_END3', tile=Tile(x=1, y=1)), NodeHeader(name='LA_I3', tile=Tile(x=1, y=1))]
@@ -171,6 +192,9 @@ class TestBfs(unittest.TestCase):
         self.assertCountEqual(target_features, features)
 
     def test_append_features_to_file(self):
+        """
+        Test the appending of features to a file without overriding features created by FABulous.
+        """
         #Arrange
         features = ["X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3"]
         self.assertFalse(os.path.exists(test_file))
@@ -194,6 +218,9 @@ class TestBfs(unittest.TestCase):
         self.assertTrue(start_found)
 
     def test_get_tiles_for_fabric_return_correct_dict(self):
+        """
+        Test the reading of the file types in a fabric.
+        """
         #Arrange
 
         #Act
@@ -208,6 +235,9 @@ class TestBfs(unittest.TestCase):
         self.assertEqual(tiles[Tile(1, 1)], "LUT4AB")
 
     def test_get_all_locations_of_tile_type_LUT4AB_return_full_list(self):
+        """
+        Test the reading of the location of all LUT4AB tiles.
+        """
         #Arrange
         tile_type = Tile.Types.LUT4AB
         locations_truth = [Tile(1, 1), Tile(2, 1), Tile(4, 1), Tile(5, 1), Tile(7, 1), Tile(8, 1),
@@ -233,6 +263,9 @@ class TestBfs(unittest.TestCase):
         self.assertCountEqual(locations_truth, locations)
 
     def test_get_all_locations_of_tile_type_NULL_return_full_list(self):
+        """
+        Test the reading of the location of all NULL tiles.
+        """
         #Arrange
         tile_type = Tile.Types.NULL
         locations_truth = [Tile(0, 0), Tile(0, 15)]
