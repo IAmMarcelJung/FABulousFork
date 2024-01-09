@@ -53,6 +53,15 @@ def get_all_locations_of_tile_type(tile_type: str, tiles: Dict):
             locations.append(key)
     return locations
 
+def get_all_locations_of_tiles(tiles: Dict):
+    '''
+    Get all locations of all tiles.
+    '''
+    locations = []
+    for key in tiles.keys():
+        if tiles[key] not in [Tile.Types.N_term_RAM_IO, Tile.Types.RAM_IO, Tile.Types.S_term_RAM_IO]:
+            locations.append(key)
+    return locations
 
 def test(project_dir):
     pip_file = project_dir + ".FABulous/pips.txt"
