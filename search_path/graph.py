@@ -262,12 +262,10 @@ def create_features(path: List) -> List:
             current_tile = elem
             tile = elem.tile
             tile_str = tile.to_string()
-            #source = elem.name
-            source = elem.uid
+            source = elem.name
 
             next_elem = path.peek()
-            #sink = next_elem.name
-            sink = next_elem.uid
+            sink = next_elem.name
 
             feature = f'{tile_str}.{source}.{sink}'
             feature_list.append(feature)
