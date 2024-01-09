@@ -85,6 +85,7 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile, mapping: Mapping) ->
 
     :param str pip_file: The pip file where to extract the nodes from.
     :param Tile tile: The tile for which to extract the nodes.
+    :param Mapping mapping: The mapping to to be used for the tile.
     :return The nodes extracted from the pip file for the given tile.
     :rtype Set
     """
