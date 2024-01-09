@@ -128,6 +128,7 @@ def add_parents_and_children(pip_file: str, tile: Tile, nodes_set: Set, mapping:
     :param str pip_file: The pip file where to extract the child and parent nodes from.
     :param Tile tile: The tile for which to add the child and parent nodes to nodes.
     :param Set nodes_set: All previously created nodes.
+    :param Mapping mapping: The mapping between tile string and UID.
     :return All nodes associated with name, tile, parents and children, both internal and external.
     """
     nodes = {key: Node(key) for key in nodes_set}
