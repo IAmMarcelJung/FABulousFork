@@ -59,19 +59,26 @@ class TestBfs(unittest.TestCase):
         #tile_str = tile_to_str(tile)
         tile_str = tile.to_string()
 
+        node_0 = mapping.node_header_to_uid[NodeHeader("LA_O", tile)]
+        node_1 = mapping.node_header_to_uid[NodeHeader("JW2BEG1", tile)]
+        node_2 = mapping.node_header_to_uid[NodeHeader("JW2END1", tile)]
+        node_3 = mapping.node_header_to_uid[NodeHeader("J_l_AB_BEG3", tile)]
+        node_4 = mapping.node_header_to_uid[NodeHeader("J_l_AB_END3", tile)]
+        node_5 = mapping.node_header_to_uid[NodeHeader("LA_I3", tile)]
+
         found_target = False
         name = ""
         #Act
-        if NodeHeader("JW2BEG1", tile) in nodes[NodeHeader("LA_O", tile)].internal_children:
-            if NodeHeader("JW2END1", tile) in nodes[NodeHeader("JW2BEG1", tile)].internal_children:
-                if NodeHeader("J_l_AB_BEG3", tile) in nodes[NodeHeader("JW2END1", tile)].internal_children:
-                    if NodeHeader("J_l_AB_END3", tile) in nodes[NodeHeader("J_l_AB_BEG3", tile)].internal_children:
-                        if NodeHeader("LA_I3", tile) in nodes[NodeHeader("J_l_AB_END3", tile)].internal_children:
+        if node_1 in nodes[node_0].internal_children:
+            if node_2 in nodes[node_1].internal_children:
+                if node_3 in nodes[node_2].internal_children:
+                    if node_4 in nodes[node_3].internal_children:
+                        if node_5 in nodes[node_4].internal_children:
                             found_target = True
-        name = nodes[NodeHeader("LA_I3", tile)].name
+        final_node = mapping.uid_to_node_header[node_5]
         #Assert
-        self.assertEqual("LA_I3", name)
         self.assertTrue(found_target)
+        self.assertEqual("LA_I3", final_node.name)
 
     def test_str_to_tile(self):
         """
