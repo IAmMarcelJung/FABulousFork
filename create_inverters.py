@@ -1,11 +1,16 @@
 #!/bin/python
 from tqdm import tqdm
 import multiprocessing
-import joblib
 from joblib import Parallel, delayed
-from search_path.graph import *
-from search_path.utils import *
-from search_path.mapping import *
+from typing import Dict, List
+
+from search_path.mapping import Mapping
+from search_path.node import NodeHeader
+from search_path.tile import Tile
+from search_path.bfs import bfs
+from search_path.graph import create_graph
+from search_path.utils import get_all_locations_of_tile_type, get_tiles_for_fabric
+from search_path.fasm_features import append_features_to_file, create_features
 
 
 features = []
@@ -32,13 +37,8 @@ pip_file = "tb_test/.FABulous/pips.txt"
 fabric_file = "search_path/fabric.csv"
 tile_type = Tile.Types.LUT4AB
 #tile_type = Tile.Types.RAM_IO
-#print(tile_type)
 mapping = Mapping()
-#graph, mapping = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
-graph = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
-print(type(graph[0]))
-print(type(graph[1]))
-#print(mapping.node_header_to_uid.keys())
+graph = create_graph(pip_file, mapping)
 test = NodeHeader(start, Tile(1,1))
 
 tiles = get_tiles_for_fabric(fabric_file)

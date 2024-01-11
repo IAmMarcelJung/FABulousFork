@@ -1,7 +1,9 @@
 #!/bin/python
 import os
-from typing import *
-from search_path.tile import *
+import csv
+
+from typing import Dict
+from search_path.tile import Tile
 
 
 def transpose_csv(input_file, output_file):
@@ -12,16 +14,6 @@ def transpose_csv(input_file, output_file):
 
     with open(output_file, "w") as f_out:
         csv.writer(f_out).writerows(a)
-
-def create_data(project_dir):
-    pip_file = project_dir + ".FABulous/pips.txt"
-    with open(pip_file, "r") as f:
-        for line in f:
-            if line.startswith("#"):
-                continue
-            line_list = line.split(",")
-            tile = line_list[0]
-            feature = line_list[-1]
 
 def get_tiles_for_fabric(fabric_file: str):
     """

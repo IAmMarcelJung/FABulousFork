@@ -35,5 +35,18 @@ class Tile:
         S_term_single2 = 'S_term_single2'
         S_term_DSP = 'S_term_DSP'
         S_term_RAM_IO = 'S_term_RAM_IO'
+
+def create_tile_from_string(tile_str: str) -> Tile:
+    """Create a tile from a string.
+
+    :param str tile_str: The tile as a string to be converted.
+    :return: The tile string converted to a Tile.
+    :rtype: Tile
+    """
+    parts = tile_str.split('Y')
+    x = parts[0].strip('X')
+    y = parts[1].strip('Y')
+    return Tile(int(x), int(y))
+
 if __name__ == "__main__":
     pass
