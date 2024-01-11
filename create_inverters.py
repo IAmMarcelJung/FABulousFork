@@ -9,7 +9,7 @@ from search_path.node import NodeHeader
 from search_path.tile import Tile
 from search_path.bfs import bfs
 from search_path.graph import create_graph
-from search_path.utils import get_all_locations_of_tile_type, get_tiles_for_fabric
+from search_path.utils import get_all_locations_of_tile_type, get_tiles_for_fabric, convert_and_sort
 from search_path.fasm_features import append_features_to_file, create_features
 
 
@@ -23,8 +23,8 @@ def search_in_tile(graph: Dict, tile: Tile, start: str, end: str, mapping: Mappi
     :param Tile tile: The tile in which to search.
     :param str start: The name of the start node.
     :param str end: The name of the end node.
-    :return The list of shortest paths from start to end.
-    :rtype List
+    :return: The list of shortest paths from start to end.
+    :rtype: List
     """
     start_node = NodeHeader(start, tile)
     end_node = NodeHeader(end, tile)
@@ -38,12 +38,14 @@ fabric_file = "search_path/fabric.csv"
 tile_type = Tile.Types.LUT4AB
 #tile_type = Tile.Types.RAM_IO
 mapping = Mapping()
+
+print("Creating graph...")
 graph = create_graph(pip_file, mapping)
 test = NodeHeader(start, Tile(1,1))
 
 tiles = get_tiles_for_fabric(fabric_file)
 tiles = get_all_locations_of_tile_type(tile_type, tiles)
-#tiles = tiles[:10]
+#tiles = tiles[:1]
 
 print("Searching for possible paths:")
 paths = list(
@@ -54,10 +56,12 @@ paths = list(
         total=len(tiles),
     )
 )
+
+
+header_node_paths = convert_and_sort(paths, mapping)
 features = []
-for path in paths:
-    first_path = path[0]
-    header_node_path = mapping.uid_path_to_node_header_path(first_path)
-    features += create_features(header_node_path)
+for path in header_node_paths:
+    features += create_features(path)
+
 
 append_features_to_file(features, "test_append.txt")
