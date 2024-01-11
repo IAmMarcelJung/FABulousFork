@@ -36,7 +36,6 @@ def append_features_to_file(features: List, file: str) -> None:
     with open(file, 'r+') as f:
         for line in iter(f.readline, ''):
             if '#additional features' in line:
-            #if line.startswith('#additional features'):
                 f.seek(0, 1)
                 f.truncate()
                 found_start = True
@@ -46,6 +45,7 @@ def append_features_to_file(features: List, file: str) -> None:
             f.write('#additional features\n')
         for feature in features:
             f.write(feature + '\n')
+        f.write('\n')
 
 if __name__ == "__main__":
     pass
