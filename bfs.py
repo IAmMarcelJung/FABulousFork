@@ -34,7 +34,10 @@ tile_type = Tile.Types.LUT4AB
 #tile_type = Tile.Types.RAM_IO
 #print(tile_type)
 mapping = Mapping()
-graph, mapping = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
+#graph, mapping = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
+graph = create_graph_for_all_tiles_of_type(fabric_file, pip_file, tile_type, mapping)
+print(type(graph[0]))
+print(type(graph[1]))
 #print(mapping.node_header_to_uid.keys())
 test = NodeHeader(start, Tile(1,1))
 
