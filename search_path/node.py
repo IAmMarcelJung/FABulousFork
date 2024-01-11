@@ -1,6 +1,6 @@
 #!/bin/python
 from dataclasses import dataclass
-from search_path.tile import *
+from search_path.tile import Tile
 
 @dataclass(frozen=True)
 class NodeHeader():
