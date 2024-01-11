@@ -1,15 +1,18 @@
 #!/bin/python
-import sys
 import os
 import unittest
 import time
-import cProfile
-from unittest.mock import Mock
-from unittest.mock import patch
+#import cProfile
+#from unittest.mock import Mock
+#from unittest.mock import patch
 
-from search_path.graph import *
-from search_path.utils import *
-from search_path.mapping import *
+from search_path.utils import get_tiles_for_fabric, get_all_locations_of_tile_type
+from search_path.mapping import Mapping
+from search_path.tile import Tile, create_tile_from_string
+from search_path.bfs import bfs, append_paths, get_lists_where_last_element_matches
+from search_path.node import NodeHeader
+from search_path.fasm_features import create_features, append_features_to_file
+from search_path.graph import get_nodes_from_file_for_tile, add_parents_and_children_for_tile
 
 test_file = "test_features.txt"
 fabric_file = "search_path/fabric.csv"
@@ -56,8 +59,6 @@ class TestBfs(unittest.TestCase):
         mapping = Mapping()
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
         nodes = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        #tile_str = tile_to_str(tile)
-        tile_str = tile.to_string()
 
         node_0 = mapping.node_header_to_uid[NodeHeader("LA_O", tile)]
         node_1 = mapping.node_header_to_uid[NodeHeader("JW2BEG1", tile)]
@@ -67,7 +68,6 @@ class TestBfs(unittest.TestCase):
         node_5 = mapping.node_header_to_uid[NodeHeader("LA_I3", tile)]
 
         found_target = False
-        name = ""
         #Act
         if node_1 in nodes[node_0].internal_children:
             if node_2 in nodes[node_1].internal_children:
@@ -80,17 +80,17 @@ class TestBfs(unittest.TestCase):
         self.assertTrue(found_target)
         self.assertEqual("LA_I3", final_node.name)
 
-    def test_str_to_tile(self):
+    def test_create_tile_from_string(self):
         """
         Test the conversion from a string to a tile.
         """
         #Act
-        tile = str_to_tile("X1Y1")
+        tile = create_tile_from_string("X1Y1")
         #Assert
         self.assertEqual(tile.x, 1)
         self.assertEqual(tile.y, 1)
         #Act
-        tile = str_to_tile("X12Y13")
+        tile = create_tile_from_string("X12Y13")
         #Assert
         self.assertEqual(tile.x, 12)
         self.assertEqual(tile.y, 13)
@@ -233,6 +233,8 @@ class TestBfs(unittest.TestCase):
         with open(test_file, 'r') as f:
             index = 0
             for line in f:
+                if line.startswith("\n"):
+                    continue
                 if start_found:
                     self.assertEqual(line.rstrip('\n'), features[index])
                     index += 1
