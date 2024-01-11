@@ -20,12 +20,22 @@ class Mapping:
         :return: True if the mapping was added, else false.
         :rtype: bool
         """
-        if node_header not in self.uid_to_node_header.values():
-            self.uid_to_node_header[uid] = node_header
+        if self.node_header_to_uid.setdefault(node_header) is None:
             self.node_header_to_uid[node_header] = uid
+            self.uid_to_node_header[uid] = node_header
             return True
         else:
             return False
+
+
+        """
+        if node_header in self.uid_to_node_header.values():
+            return False
+        else:
+            self.uid_to_node_header[uid] = node_header
+            self.node_header_to_uid[node_header] = uid
+            return True
+            """
 
     def uid_path_to_node_header_path(self, uid_path: list):
         """

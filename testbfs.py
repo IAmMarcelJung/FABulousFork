@@ -55,7 +55,7 @@ class TestBfs(unittest.TestCase):
         tile = Tile(1,1)
         mapping = Mapping()
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
-        nodes = add_parents_and_children(file, tile, nodes, mapping)
+        nodes = add_parents_and_children_for_tile(file, tile, nodes, mapping)
         #tile_str = tile_to_str(tile)
         tile_str = tile.to_string()
 
@@ -126,7 +126,7 @@ class TestBfs(unittest.TestCase):
         target_path = [NodeHeader(name='LA_O', tile=Tile(x=1, y=1)), NodeHeader(name='JW2BEG1', tile=Tile(x=1, y=1)), NodeHeader(name='JW2END1', tile=Tile(x=1, y=1)), NodeHeader(name='J_l_AB_BEG3', tile=Tile(x=1, y=1)), NodeHeader(name='J_l_AB_END3', tile=Tile(x=1, y=1)), NodeHeader(name='LA_I3', tile=Tile(x=1, y=1))]
         file = "tb_test/.FABulous/pips.txt"
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
-        graph = add_parents_and_children(file, tile, nodes, mapping)
+        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
         target_path = mapping.node_header_path_to_uid(target_path)
         mapping.node_header_to_uid.keys()
         #Act
@@ -168,7 +168,7 @@ class TestBfs(unittest.TestCase):
 
         file = "tb_test/.FABulous/pips.txt"
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
-        graph = add_parents_and_children(file, tile, nodes, mapping)
+        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
         mapping.node_header_to_uid
         paths = [[NodeHeader("LA_O", tile)]]
         visited = set()
