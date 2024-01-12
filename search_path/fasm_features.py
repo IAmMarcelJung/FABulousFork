@@ -1,4 +1,5 @@
-#!/bin/python
+#!/bin/python3
+import os
 
 from more_itertools import peekable
 from typing import List
@@ -32,24 +33,27 @@ def append_features_to_file(features: List, file: str) -> None:
     :param List features: The features to append to the file.
     :param str file: The file where to append the features to.
     """
-    found_start = False
-    with open(file, 'r+') as f:
-        for line in iter(f.readline, ''):
-            if '#additional features' in line:
-                f.seek(0, 1)
-                f.truncate()
-                found_start = True
-                break
+    if os.path.exists(file):
+        found_start = False
+        with open(file, 'r+') as f:
+            for line in iter(f.readline, ''):
+                if '#additional features' in line:
+                    f.seek(0, 1)
+                    f.truncate()
+                    found_start = True
+                    break
 
-        if not found_start:
-            f.write('#additional features\n')
-        previous_tile = ""
-        for feature in features:
-            current_tile = extract_start_tile_from_feature(feature)
-            if previous_tile != current_tile:
-                f.write(f"\n#Path for {current_tile}:\n")
-            f.write(feature + '\n')
-            previous_tile = current_tile
+            if not found_start:
+                f.write('#additional features\n')
+            previous_tile = ""
+            for feature in features:
+                current_tile = extract_start_tile_from_feature(feature)
+                if previous_tile != current_tile:
+                    f.write(f"\n#Path for {current_tile}:\n")
+                f.write(feature + '\n')
+                previous_tile = current_tile
+    else:
+        raise FileNotFoundError(f"Error: File {file} not found")
 
 def extract_start_tile_from_feature(feature: str):
     """ Extract the start tile of a wire from a feature.
