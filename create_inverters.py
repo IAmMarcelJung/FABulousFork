@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 from tqdm import tqdm
 import multiprocessing
 from joblib import Parallel, delayed
