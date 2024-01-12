@@ -1,3 +1,4 @@
 demo/
 __pycache__
 .hdl_checker
+.venv
