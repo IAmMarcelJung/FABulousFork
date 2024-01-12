@@ -43,9 +43,22 @@ def append_features_to_file(features: List, file: str) -> None:
 
         if not found_start:
             f.write('#additional features\n')
+        previous_tile = ""
         for feature in features:
+            current_tile = extract_start_tile_from_feature(feature)
+            if previous_tile != current_tile:
+                f.write(f"\n#Path for {current_tile}:\n")
             f.write(feature + '\n')
-        f.write('\n')
+            previous_tile = current_tile
+
+def extract_start_tile_from_feature(feature: str):
+    """ Extract the start tile of a wire from a feature.
+
+    :param str feature: The feature where to extract the start tile from.
+    :return: The start tile of the wire.
+    :rtype: str
+    """
+    return feature.split('.')[0]
 
 if __name__ == "__main__":
     pass

@@ -222,6 +222,7 @@ class TestBfs(unittest.TestCase):
         """
         #Arrange
         features = ["X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3"]
+        lines = ["#Path for X1Y1:", "X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3"]
         self.assertFalse(os.path.exists(test_file))
         open(test_file, 'w').close()
         start_found = False
@@ -236,7 +237,7 @@ class TestBfs(unittest.TestCase):
                 if line.startswith("\n"):
                     continue
                 if start_found:
-                    self.assertEqual(line.rstrip('\n'), features[index])
+                    self.assertEqual(line.rstrip('\n'), lines[index])
                     index += 1
                 if line.startswith("#additional features"):
                     if start_found:
