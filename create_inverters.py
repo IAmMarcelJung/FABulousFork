@@ -46,8 +46,7 @@ def parse_arguments():
 
 if __name__ == "__main__":
 
-    #cpu_cores = min(multiprocessing.cpu_count(), 32)
-    cpu_cores = 32
+    cpu_cores = min(multiprocessing.cpu_count(), 32)
     print(f"Using {cpu_cores} cores")
     args = parse_arguments()
     project_directory = args.directory
