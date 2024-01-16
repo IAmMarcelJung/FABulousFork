@@ -1,10 +1,11 @@
 #!/bin/python3
 import os
+import re
 
 from more_itertools import peekable
-from typing import List
+from typing import List, Set
 
-def create_features(path: List) -> List:
+def create_features(path: List, used_tiles: Set) -> List:
     """ Create the FASM features from the given path.
 
     :param List path: The path for which to create the FASM features.
@@ -19,11 +20,32 @@ def create_features(path: List) -> List:
             tile_str = tile.to_string()
             source = elem.name
 
+            # Add GND
+            if tile not in used_tiles:
+                used_tiles.add(tile)
+                gnd_feature = f"{tile_str}.GND0.A_T"
+                feature_list.append(gnd_feature)
+                gnd_feature = f"{tile_str}.GND0.B_T"
+                feature_list.append(gnd_feature)
+
+
             next_elem = path.peek()
             sink = next_elem.name
 
-            feature = f'{tile_str}.{source}.{sink}'
+            feature = f"{tile_str}.{source}.{sink}"
             feature_list.append(feature)
+
+            # Add config bits
+
+            pattern = re.compile(r"L[ABCDEFGH]_I3")
+            match = pattern.match(sink)
+
+            if match:
+                matched_letter = sink[1]
+                feature = f"{tile_str}.{matched_letter}.INIT[0]"
+                feature_list.append(feature)
+                feature = f"{tile_str}.{matched_letter}.FF"
+                feature_list.append(feature)
 
     return feature_list
 
