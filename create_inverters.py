@@ -82,8 +82,9 @@ if __name__ == "__main__":
 
     header_node_paths = convert_and_sort(paths, mapping)
     features = []
+    used_tiles = set()
     for path in header_node_paths:
-        features += create_features(path)
+        features += create_features(path, used_tiles)
 
 
     try:
