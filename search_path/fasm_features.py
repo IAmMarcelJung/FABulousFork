@@ -57,22 +57,22 @@ def append_features_to_file(features: List, file: str) -> None:
     """
     if os.path.exists(file):
         found_start = False
-        with open(file, 'r+') as f:
-            for line in iter(f.readline, ''):
-                if '#additional features' in line:
+        with open(file, "r+") as f:
+            for line in iter(f.readline, ""):
+                if "#additional features" in line:
                     f.seek(0, 1)
                     f.truncate()
                     found_start = True
                     break
 
             if not found_start:
-                f.write('#additional features\n')
+                f.write("#additional features\n")
             previous_tile = ""
             for feature in features:
                 current_tile = extract_start_tile_from_feature(feature)
                 if previous_tile != current_tile:
                     f.write(f"\n#Path for {current_tile}:\n")
-                f.write(feature + '\n')
+                f.write(feature + "\n")
                 previous_tile = current_tile
     else:
         raise FileNotFoundError(f"Error: File {file} not found")
@@ -84,7 +84,7 @@ def extract_start_tile_from_feature(feature: str):
     :return: The start tile of the wire.
     :rtype: str
     """
-    return feature.split('.')[0]
+    return feature.split(".")[0]
 
 if __name__ == "__main__":
     pass
