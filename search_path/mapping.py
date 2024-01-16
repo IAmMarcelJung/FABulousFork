@@ -61,6 +61,7 @@ class Mapping:
         uid_path = []
         for elem in node_header_path:
             uid_path.append(self.node_header_to_uid[elem])
+
         return uid_path
 
 
