@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 from dataclasses import dataclass
 from search_path.tile import Tile
 
@@ -23,6 +23,7 @@ class Node:
         self.internal_children = set()
         self.external_parents = set()
         self.external_children = set()
+        self.paths = []
 
 if __name__ == "__main__":
     pass
