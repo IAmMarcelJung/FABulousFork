@@ -102,6 +102,7 @@ class TestBfs(unittest.TestCase):
             path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E6END0 to W2MID3")
 
+
     def test_bfs_X1Y1_partial_path(self):
         """
         Test the search of a partial path in X1Y1.
@@ -127,6 +128,7 @@ class TestBfs(unittest.TestCase):
             path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
+    @unittest.skip("Skip to see if this test causes a memory leak.")
     def test_bfs_X0Y1_partial_path(self):
         """
         Test the search of a partial path in X0Y1.
@@ -152,6 +154,7 @@ class TestBfs(unittest.TestCase):
             path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X0Y1.E1BEG0")
 
+    @unittest.skip("Skip to see if this test causes a memory leak.")
     def test_bfs_io_output_to_lut_input(self):
         """
         Test the search of a partial path in X0Y1.

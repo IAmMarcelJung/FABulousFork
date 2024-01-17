@@ -47,7 +47,10 @@ class Mapping:
         """
         node_header_path = []
         for elem in uid_path:
-            node_header_path.append(self.uid_to_node_header[elem])
+            if isinstance(elem, list):
+                node_header_path.append(self.uid_to_node_header[elem[0]])
+            else:
+                node_header_path.append(self.uid_to_node_header[elem])
         return node_header_path
 
     def node_header_path_to_uid(self, node_header_path: list):
