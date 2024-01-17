@@ -23,7 +23,7 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     end_node_uid = mapping.node_header_to_uid[end_node]
     visited.add(current_node)
     paths = [[current_node]]
-    append_paths(paths, current_node, graph, visited)
+    #append_paths(paths, current_node, graph, visited)
 
     while current_node != end_node_uid:
         for child in {*graph[current_node].internal_children, *graph[current_node].external_children}:
@@ -35,7 +35,7 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
         if not queue:
             break
         current_node = queue.popleft()
-        append_paths(paths, current_node, graph, visited)
+        #append_paths(paths, current_node, graph, visited)
         visited.add(current_node)
 
     """
@@ -56,7 +56,7 @@ def get_lists_where_first_and_last_element_matches(lists: List, start: str, end:
     """Get all lists where the first and the last element matches the given elements.
 
     :param List lists: The lists to be searched for the element.
-    :param str start: The elem the list shoud start with.
+    :param str start: The elem the list should start with.
     :param str end: The elem the list should end with.
     :return: All lists where the element was found as the first element of the given lists.
     :rtype: List

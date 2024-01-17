@@ -29,6 +29,7 @@ def search_in_tile(graph: Dict, tile: Tile, start: str, end: str, mapping: Mappi
     end_node = NodeHeader(end, tile)
     paths = bfs(graph, start_node, end_node, mapping)
     return paths
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
             prog='create_inverters',
@@ -59,10 +60,13 @@ if __name__ == "__main__":
 
     print("Creating graph...")
     graph = create_graph(pip_file, mapping)
+    for key in graph.keys():
+        if graph.uid_to_node_header[key] == "A_O":
+            print("FOUND A_O")
 
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
-    #tiles = tiles[:1]
+    tiles = tiles[:1]
 
     paths = []
     print("Searching for possible paths:")
@@ -80,7 +84,9 @@ if __name__ == "__main__":
         for tmp_path in tmp_paths:
             paths.append(tmp_path)
 
+    print(paths)
     header_node_paths = convert_and_sort(paths, mapping)
+    print(header_node_paths)
     features = []
     used_tiles = set()
     for path in header_node_paths:
