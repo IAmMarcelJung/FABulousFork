@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 import os
 import unittest
 import time
@@ -12,7 +12,7 @@ from search_path.tile import Tile, create_tile_from_string
 from search_path.bfs import bfs, append_paths, get_lists_where_last_element_matches
 from search_path.node import NodeHeader
 from search_path.fasm_features import create_features, append_features_to_file
-from search_path.graph import get_nodes_from_file, get_nodes_from_file_for_tile, add_parents_and_children_for_tile
+from search_path.graph import get_nodes_from_file, get_nodes_from_file_for_tile, add_parents_and_children_for_tile, create_graph
 
 test_file = "test_features.txt"
 fabric_file = "search_path/fabric.csv"
@@ -45,69 +45,6 @@ class TestBfs(unittest.TestCase):
         self.assertTrue(self.best.cost == 1, f"Expected {1} got {self.best.cost}")
 
     """
-    def test_create_graph_from_file(self):
-        """
-        Test the creation of the graph from the pips file.
-        """
-        #graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
-        #Arrange
-        file = "tb_test/.FABulous/pips.txt"
-        tile = Tile(1,1)
-        mapping = Mapping()
-        nodes = get_nodes_from_file_for_tile(file, tile, mapping)
-        nodes = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-
-        node_0 = mapping.node_header_to_uid[NodeHeader("LA_O", tile)]
-        node_1 = mapping.node_header_to_uid[NodeHeader("JW2BEG1", tile)]
-        node_2 = mapping.node_header_to_uid[NodeHeader("JW2END1", tile)]
-        node_3 = mapping.node_header_to_uid[NodeHeader("J_l_AB_BEG3", tile)]
-        node_4 = mapping.node_header_to_uid[NodeHeader("J_l_AB_END3", tile)]
-        node_5 = mapping.node_header_to_uid[NodeHeader("LA_I3", tile)]
-
-        found_target = False
-        #Act
-        if node_1 in nodes[node_0].internal_children:
-            if node_2 in nodes[node_1].internal_children:
-                if node_3 in nodes[node_2].internal_children:
-                    if node_4 in nodes[node_3].internal_children:
-                        if node_5 in nodes[node_4].internal_children:
-                            found_target = True
-        final_node = mapping.uid_to_node_header[node_5]
-        #Assert
-        self.assertTrue(found_target)
-        self.assertEqual("LA_I3", final_node.name)
-
-    def test_create_tile_from_string(self):
-        """
-        Test the conversion from a string to a tile.
-        """
-        #Act
-        tile = create_tile_from_string("X1Y1")
-        #Assert
-        self.assertEqual(tile.x, 1)
-        self.assertEqual(tile.y, 1)
-        #Act
-        tile = create_tile_from_string("X12Y13")
-        #Assert
-        self.assertEqual(tile.x, 12)
-        self.assertEqual(tile.y, 13)
-
-    def test_tile_to_str(self):
-        """
-        Test the conversion from a tile to a string.
-        """
-        #Arrange
-        tile = Tile(1, 1)
-        #Act
-        tile_str = tile.to_string()
-        #Assert
-        self.assertEqual("X1Y1", tile_str)
-        #Arrange
-        tile = Tile(999, 999)
-        #Act
-        tile_str = tile.to_string()
-        #Assert
-        self.assertEqual("X999Y999", tile_str)
 
     #@unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs_X1Y1_output_to_input(self):
@@ -119,8 +56,9 @@ class TestBfs(unittest.TestCase):
         tile = Tile(1, 1)
         mapping = Mapping()
         file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file(file, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        #nodes = get_nodes_from_file(file, mapping)
+        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("LA_O", tile)
         end_node = NodeHeader("LA_I3", tile)
@@ -130,8 +68,12 @@ class TestBfs(unittest.TestCase):
         #Act
         #cProfile.runctx("bfs(graph, start_node, end_node)", globals(), locals(), "profile.txt", "cumtime")
         paths = bfs(graph, start_node, end_node, mapping)
+        print(f"expected paths: {paths}")
+        print(f"Target path: {target_path}")
 
         #Assert
+        for path in paths:
+            path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from LA_O to LA_I3")
 
     def test_bfs_X1Y1_turnaround(self):
@@ -142,8 +84,9 @@ class TestBfs(unittest.TestCase):
         tile = Tile(1, 1)
         mapping = Mapping()
         file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file(file, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        #nodes = get_nodes_from_file(file, mapping)
+        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("E6END0", tile)
         end_tile = Tile(0, 1)
@@ -155,6 +98,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(graph, start_node, end_node, mapping)
 
         #Assert
+        for path in paths:
+            path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E6END0 to W2MID3")
 
     def test_bfs_X1Y1_partial_path(self):
@@ -165,8 +110,9 @@ class TestBfs(unittest.TestCase):
         tile = Tile(1, 1)
         mapping = Mapping()
         file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file(file, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        #nodes = get_nodes_from_file(file, mapping)
+        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("E1END0", tile)
         end_node = NodeHeader("LA_I0", tile)
@@ -177,6 +123,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(graph, start_node, end_node, mapping)
 
         #Assert
+        for path in paths:
+            path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
     def test_bfs_X0Y1_partial_path(self):
@@ -187,8 +135,9 @@ class TestBfs(unittest.TestCase):
         tile = Tile(0, 1)
         mapping = Mapping()
         file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file(file, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        #nodes = get_nodes_from_file(file, mapping)
+        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("A_O", tile)
         end_node = NodeHeader("E1BEG0", tile)
@@ -199,6 +148,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(graph, start_node, end_node, mapping)
 
         #Assert
+        for path in paths:
+            path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X0Y1.E1BEG0")
 
     def test_bfs_io_output_to_lut_input(self):
@@ -209,8 +160,9 @@ class TestBfs(unittest.TestCase):
         tile = Tile(0, 1)
         mapping = Mapping()
         file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file(file, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        #nodes = get_nodes_from_file(file, mapping)
+        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        graph = create_graph(file, mapping)
 
         end_tile = Tile(1, 1)
         start_node = NodeHeader("A_O", tile)
@@ -222,40 +174,10 @@ class TestBfs(unittest.TestCase):
         paths = bfs(graph, start_node, end_node, mapping)
 
         #Assert
+        for path in paths:
+            path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X1Y1.LA_I0")
 
-    def test_append_paths(self):
-        """
-        Test the appending of nodes to a path.
-        """
-        #Arrange
-        tile = Tile(1,1)
-        mapping = Mapping()
-        target_paths = [[NodeHeader(name="LA_O", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="S4BEG0", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="SS4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="E6BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="NN4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W6BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W1BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="WW4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="EE4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="A", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="E6BEG0", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W6BEG0", tile=Tile(x=1, y=1))]]
-
-        file = "tb_test/.FABulous/pips.txt"
-        nodes = get_nodes_from_file_for_tile(file, tile, mapping)
-        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        mapping.node_header_to_uid
-        paths = [[NodeHeader("LA_O", tile)]]
-        visited = set()
-        node = mapping.node_header_to_uid[NodeHeader("LA_O", Tile(1, 1))]
-        #paths = [[NodeHeader("LA_O", tile)]]
-        paths = [[node]]
-
-        visited.add(node)
-
-        #Act
-        append_paths(paths, node, graph, visited)
-
-        #Assert
-        paths_node_header = []
-        for path in paths:
-            header_path = []
-            for node in path:
-                header_path.append(mapping.uid_to_node_header[node])
-            paths_node_header.append(header_path)
-        self.assertCountEqual(paths_node_header, target_paths)
 
     def test_get_lists_where_last_element_machtes(self):
         """
@@ -413,6 +335,196 @@ class TestBfs(unittest.TestCase):
 
         #Assert
         self.assertCountEqual(result, node_header_path)
+
+
+class TestAppendPaths(unittest.TestCase):
+
+    def test_append_paths(self):
+        """
+        Test the appending of nodes to a path.
+        """
+        #Arrange
+        tile = Tile(1,1)
+        mapping = Mapping()
+        target_paths = [[NodeHeader(name="LA_O", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="S4BEG0", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="SS4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="E6BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG4", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG6", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="NN4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W6BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W1BEG3", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="WW4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JS2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="EE4BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="A", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="E6BEG0", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG2", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JE2BEG1", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG7", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JN2BEG5", tile=Tile(x=1, y=1))], [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="W6BEG0", tile=Tile(x=1, y=1))]]
+
+        file = "tb_test/.FABulous/pips.txt"
+        nodes = get_nodes_from_file_for_tile(file, tile, mapping)
+        graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
+        mapping.node_header_to_uid
+        paths = [[NodeHeader("LA_O", tile)]]
+        visited = set()
+        node = mapping.node_header_to_uid[NodeHeader("LA_O", Tile(1, 1))]
+        #paths = [[NodeHeader("LA_O", tile)]]
+        paths = [[node]]
+
+        visited.add(node)
+
+        #Act
+        append_paths(paths, node, graph, visited)
+
+        #Assert
+        paths_node_header = []
+        for path in paths:
+            header_path = []
+            for node in path:
+                header_path.append(mapping.uid_to_node_header[node])
+            paths_node_header.append(header_path)
+        self.assertCountEqual(paths_node_header, target_paths)
+
+    def test_empty_paths(self):
+        """Test when paths is an empty list."""
+        # Arrange
+        paths = []
+        current_node = NodeHeader("A", Tile(0, 0))
+        graph = {"A": NodeHeader("A", Tile(0, 0))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [])
+
+    def test_no_children(self):
+        """Test when the current node has no children."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(1, 1))]]
+        current_node = NodeHeader("C", Tile(3, 3))
+        graph = {"C": NodeHeader("C", Tile(3, 3))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(1, 1))]])
+
+    @unittest.skip("Test not yet checked")
+    def test_existing_node_in_path(self):
+        """Test when the current node is already in the path."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1))]]
+        current_node = NodeHeader("B", Tile(1, 1))
+        graph = {"B": NodeHeader("B", Tile(1, 1))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1))]])
+
+    @unittest.skip("Test not yet checked")
+    def test_append_internal_children(self):
+        """Test appending internal children to paths."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(0, 0))]]
+        current_node = NodeHeader("A", Tile(0, 0))
+        graph = {"A": NodeHeader("A", Tile(0, 0))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(0, 0))]])
+
+    @unittest.skip("Test not yet checked")
+    def test_append_external_children(self):
+        """Test appending external children to paths."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(0, 0))]]
+        current_node = NodeHeader("A", Tile(0, 0))
+        graph = {"A": NodeHeader("A", Tile(0, 0))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(0, 0))]])
+
+
+    @unittest.skip("Test not yet checked")
+    def test_append_both_internal_and_external_children(self):
+        """Test appending both internal and external children to paths."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(0, 0))]]
+        current_node = NodeHeader("A", Tile(0, 0))
+        graph = {"A": NodeHeader("A", Tile(0, 0))}
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(0, 0))]])
+
+    @unittest.skip("Test not yet checked")
+    def test_visited_nodes(self):
+        """Test when some nodes are already visited."""
+        # Arrange
+        paths = [[NodeHeader("A", Tile(0, 0))]]
+        current_node = NodeHeader("A", Tile(0, 0))
+        graph = {"A": NodeHeader("A", Tile(0, 0))}
+        visited = {"B"}
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [[NodeHeader("A", Tile(0, 0))]])
+
+    @unittest.skip("Test not yet checked")
+    def test_multiple_paths(self):
+        """Test when there are multiple paths to append."""
+        # Arrange
+        paths = [
+            [NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1))],
+            [NodeHeader("C", Tile(2, 2)), NodeHeader("D", Tile(3, 3))]
+        ]
+        current_node = NodeHeader("E", Tile(4, 4))
+        graph = {
+            "B": NodeHeader("B", Tile(1, 1)),
+            "D": NodeHeader("D", Tile(3, 3)),
+        }
+        visited = set()
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [
+            [NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1)), NodeHeader("E", Tile(4, 4))],
+            [NodeHeader("C", Tile(2, 2)), NodeHeader("D", Tile(3, 3)), NodeHeader("E", Tile(4, 4))]
+        ])
+
+    @unittest.skip("Test not yet checked")
+    def test_complex_scenario(self):
+        """Test a more complex scenario with various conditions."""
+        # Arrange
+        paths = [
+            [NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1))],
+            [NodeHeader("C", Tile(2, 2)), NodeHeader("D", Tile(3, 3))]
+        ]
+        current_node = NodeHeader("E", Tile(4, 4))
+        graph = {
+            "B": NodeHeader("B", Tile(1, 1)),
+            "D": NodeHeader("D", Tile(3, 3)),
+            "G": NodeHeader("G", Tile(5, 5)),
+        }
+        visited = {"F"}
+
+        # Act
+        append_paths(paths, current_node, graph, visited)
+
+        # Assert
+        self.assertEqual(paths, [
+            [NodeHeader("A", Tile(0, 0)), NodeHeader("B", Tile(1, 1)), NodeHeader("E", Tile(4, 4))],
+            [NodeHeader("C", Tile(2, 2)), NodeHeader("D", Tile(3, 3)), NodeHeader("E", Tile(4, 4))],
+            [NodeHeader("G", Tile(5, 5)), NodeHeader("E", Tile(4, 4))],
+        ])
 
 if __name__ == "__main__":
     unittest.main()

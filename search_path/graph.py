@@ -144,6 +144,10 @@ def add_parents_and_children(pip_file: str, nodes_set: Set, mapping: Mapping) ->
                 else:
                     graph[sink_id].external_parents.add(source_id)
                     graph[source_id].internal_children.add(sink_id)
+                if not graph[sink_id].paths:
+                    graph[sink_id].paths.append([sink_id])
+                if not graph[source_id].paths:
+                    graph[source_id].paths.append([source_id])
 
     return graph
 

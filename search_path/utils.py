@@ -74,15 +74,15 @@ def convert_and_sort(paths: List, mapping: Mapping):
     Convert paths to the node header representation and sort the path list according to the tile"
     :param List paths: The list of possible paths.
     :param Mapping mapping: The mapping between node header and UID.
-    :return: The converterd and sorted path list.
+    :return: The converted and sorted path list.
     :rtype: List
 
     """
     header_node_paths = []
     for path in paths:
-        first_path = path[0]
-        header_node_path = mapping.uid_path_to_node_header_path(first_path)
-        header_node_paths.append(header_node_path)
+        if isinstance(path, list):
+            header_node_path = mapping.uid_path_to_node_header_path(path)
+            header_node_paths.append(header_node_path)
 
     header_node_paths.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
     return header_node_paths
