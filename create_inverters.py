@@ -16,26 +16,12 @@ from search_path.graph import create_graph
 from search_path.utils import get_all_locations_of_tile_type, get_tiles_for_fabric, convert_and_sort
 from search_path.fasm_features import append_features_to_file, create_features
 
-def search_in_tile(graph: Dict, tile: Tile, start: str, end: str, mapping: Mapping) -> List:
-    """Search all possible paths inside a given tile.
-
-    :param Dict graph: The graph in which to search.
-    :param Tile tile: The tile in which to search.
-    :param str start: The name of the start node.
-    :param str end: The name of the end node.
-    :return: The list of shortest paths from start to end.
-    :rtype: List
-    """
-    start_node = NodeHeader(start, tile)
-    end_node = NodeHeader(end, tile)
-    paths = bfs(graph, start_node, end_node, mapping)
-    return paths
-
 def parse_arguments():
     parser = argparse.ArgumentParser(
             prog='create_inverters',
             description='Create inverters in a FABulous fabric.')
-    parser.add_argument("-d", "--directory", help="Path to the project directory.")
+    parser.add_argument("directory", help="Path to the project directory.")
+    parser.add_argument("-n", type=int, default=1, help="Number of tiles to skip.")
 
     args = parser.parse_args()
 
@@ -51,6 +37,7 @@ if __name__ == "__main__":
 
     args = parse_arguments()
     project_directory = args.directory
+    skip_tiles = args.n
 
     luts_in_tile = ["A", "B", "C", "D", "E", "F", "G", "H"]
     pip_file = f"{project_directory}/.FABulous/pips.txt"
@@ -66,7 +53,7 @@ if __name__ == "__main__":
 
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
-    #tiles = tiles[:5]
+    tiles = tiles[::skip_tiles]
 
     paths = []
     print("Searching for possible paths:")
@@ -84,7 +71,10 @@ if __name__ == "__main__":
             )
         """
         for tile in tqdm(tiles):
-            paths.append(search_in_tile(graph, tile, start, end, mapping))
+            start_node = NodeHeader(start, tile)
+            end_node = NodeHeader(end, tile)
+            path = bfs(graph, start_node, end_node, mapping)
+            paths.append(path)
 
     header_node_paths = convert_and_sort(paths, mapping)
     features = []
