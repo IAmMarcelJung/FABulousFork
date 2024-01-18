@@ -80,7 +80,6 @@ def convert_and_sort(paths: List, mapping: Mapping):
     """
     header_node_paths = []
     for path in paths:
-        print(path)
         if isinstance(path, list):
             header_node_path = mapping.uid_path_to_node_header_path(path[0])
             header_node_paths.append(header_node_path)
