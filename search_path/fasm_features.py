@@ -13,6 +13,7 @@ def create_features(path: List, used_tiles: Set) -> List:
     :rtype: List
     """
     feature_list = []
+    print(path)
     path = peekable(path)
     for elem in path:
         if path:
@@ -28,7 +29,6 @@ def create_features(path: List, used_tiles: Set) -> List:
                 gnd_feature = f"{tile_str}.GND0.B_T"
                 feature_list.append(gnd_feature)
 
-
             next_elem = path.peek()
             sink = next_elem.name
 
@@ -38,10 +38,10 @@ def create_features(path: List, used_tiles: Set) -> List:
             # Add config bits
 
             pattern = re.compile(r"L[ABCDEFGH]_I3")
-            match = pattern.match(sink)
+            match = pattern.match(source)
 
             if match:
-                matched_letter = sink[1]
+                matched_letter = source[1]
                 feature = f"{tile_str}.{matched_letter}.INIT[0]"
                 feature_list.append(feature)
                 feature = f"{tile_str}.{matched_letter}.FF"
