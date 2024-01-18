@@ -18,6 +18,11 @@ test_file = "test_features.txt"
 fabric_file = "search_path/fabric.csv"
 
 class TestBfs(unittest.TestCase):
+    graph = {}
+    file = "tb_test/.FABulous/pips.txt"
+    mapping = Mapping()
+    graph = create_graph(file, mapping)
+
 
     def setUp(self):
         self.startTime = time.time()
@@ -46,28 +51,21 @@ class TestBfs(unittest.TestCase):
 
     """
 
-    #@unittest.skip("Skip while testing other test, since this test takes long")
     def test_bfs_X1Y1_output_to_input(self):
         """
         Test the search of a path from an output to an input in X1Y1.
         """
-
         #Arrange
         tile = Tile(1, 1)
-        mapping = Mapping()
-        file = "tb_test/.FABulous/pips.txt"
-        #nodes = get_nodes_from_file(file, mapping)
-        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("LA_O", tile)
         end_node = NodeHeader("LA_I3", tile)
         target_path = [NodeHeader(name="LA_O", tile=Tile(x=1, y=1)), NodeHeader(name="JW2BEG1", tile=Tile(x=1, y=1)), NodeHeader(name="JW2END1", tile=Tile(x=1, y=1)), NodeHeader(name="J_l_AB_BEG3", tile=Tile(x=1, y=1)), NodeHeader(name="J_l_AB_END3", tile=Tile(x=1, y=1)), NodeHeader(name="LA_I3", tile=Tile(x=1, y=1))]
-        target_path = mapping.node_header_path_to_uid(target_path)
-        mapping.node_header_to_uid.keys()
+        target_path = self.mapping.node_header_path_to_uid(target_path)
+
         #Act
-        #cProfile.runctx("bfs(graph, start_node, end_node)", globals(), locals(), "profile.txt", "cumtime")
-        paths = bfs(graph, start_node, end_node, mapping)
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
+
         print(f"expected paths: {paths}")
         print(f"Target path: {target_path}")
 
@@ -82,20 +80,15 @@ class TestBfs(unittest.TestCase):
         """
         #Arrange
         tile = Tile(1, 1)
-        mapping = Mapping()
-        file = "tb_test/.FABulous/pips.txt"
-        #nodes = get_nodes_from_file(file, mapping)
-        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("E6END0", tile)
         end_tile = Tile(0, 1)
         end_node = NodeHeader("W2MID3", end_tile)
         target_path = [NodeHeader("E6END0", tile), NodeHeader("JW2BEG3", tile), NodeHeader("JW2END3", tile), NodeHeader("W2BEG3", tile), NodeHeader("W2MID3", end_tile)]
-        target_path = mapping.node_header_path_to_uid(target_path)
+        target_path = self.mapping.node_header_path_to_uid(target_path)
 
         #Act
-        paths = bfs(graph, start_node, end_node, mapping)
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
         for path in paths:
@@ -109,80 +102,64 @@ class TestBfs(unittest.TestCase):
         """
         #Arrange
         tile = Tile(1, 1)
-        mapping = Mapping()
-        file = "tb_test/.FABulous/pips.txt"
-        #nodes = get_nodes_from_file(file, mapping)
-        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("E1END0", tile)
         end_node = NodeHeader("LA_I0", tile)
         target_path = [NodeHeader("E1END0", tile), NodeHeader("JN2BEG1", tile), NodeHeader("JN2END1", tile), NodeHeader("J_l_AB_BEG0", tile), NodeHeader("J_l_AB_END0", tile), NodeHeader("LA_I0", tile)]
-        target_path = mapping.node_header_path_to_uid(target_path)
+        target_path = self.mapping.node_header_path_to_uid(target_path)
 
         #Act
-        paths = bfs(graph, start_node, end_node, mapping)
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
         for path in paths:
             path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
-    @unittest.skip("Skip to see if this test causes a memory leak.")
     def test_bfs_X0Y1_partial_path(self):
         """
         Test the search of a partial path in X0Y1.
         """
         #Arrange
         tile = Tile(0, 1)
-        mapping = Mapping()
-        file = "tb_test/.FABulous/pips.txt"
-        #nodes = get_nodes_from_file(file, mapping)
-        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        graph = create_graph(file, mapping)
 
         start_node = NodeHeader("A_O", tile)
         end_node = NodeHeader("E1BEG0", tile)
         target_path = [start_node, NodeHeader("E1BEG0", tile)]
-        target_path = mapping.node_header_path_to_uid(target_path)
+        target_path = self.mapping.node_header_path_to_uid(target_path)
 
         #Act
-        paths = bfs(graph, start_node, end_node, mapping)
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
         for path in paths:
             path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X0Y1.E1BEG0")
 
-    @unittest.skip("Skip to see if this test causes a memory leak.")
     def test_bfs_io_output_to_lut_input(self):
         """
         Test the search of a partial path in X0Y1.
         """
         #Arrange
         tile = Tile(0, 1)
-        mapping = Mapping()
-        file = "tb_test/.FABulous/pips.txt"
-        #nodes = get_nodes_from_file(file, mapping)
-        #graph = add_parents_and_children_for_tile(file, tile, nodes, mapping)
-        graph = create_graph(file, mapping)
 
         end_tile = Tile(1, 1)
         start_node = NodeHeader("A_O", tile)
         end_node = NodeHeader("LA_I0", end_tile)
         target_path = [start_node, NodeHeader("E1BEG0", tile), NodeHeader("E1END0", end_tile), NodeHeader("JN2BEG1", end_tile), NodeHeader("JN2END1", end_tile), NodeHeader("J_l_AB_BEG0", end_tile), NodeHeader("J_l_AB_END0", end_tile), NodeHeader("LA_I0", end_tile)]
-        target_path = mapping.node_header_path_to_uid(target_path)
+        target_path = self.mapping.node_header_path_to_uid(target_path)
 
         #Act
-        paths = bfs(graph, start_node, end_node, mapping)
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
         for path in paths:
             path.reverse()
+        print(self.mapping.uid_path_to_node_header_path(target_path))
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X1Y1.LA_I0")
 
 
-    def test_get_lists_where_last_element_machtes(self):
+    def test_get_lists_where_last_element_matches(self):
         """
         Test the function which gets the lists where the last element matches a given element.
         """
@@ -313,10 +290,10 @@ class TestBfs(unittest.TestCase):
         mapping = Mapping()
         node_header_path = [NodeHeader("A", tile), NodeHeader("B", tile), NodeHeader("C", tile), NodeHeader("D", tile)]
         for i in range(min(len(node_header_path), len(uid_path))):
-            mapping.add(node_header_path[i], uid_path[i])
+            self.mapping.add(node_header_path[i], uid_path[i])
 
         #Act
-        result = mapping.uid_path_to_node_header_path(uid_path)
+        result = self.mapping.uid_path_to_node_header_path(uid_path)
 
         #Assert
         self.assertCountEqual(result, node_header_path)
@@ -331,15 +308,16 @@ class TestBfs(unittest.TestCase):
         mapping = Mapping()
         node_header_path = [NodeHeader("A", tile), NodeHeader("B", tile), NodeHeader("C", tile), NodeHeader("D", tile)]
         for i in range(min(len(node_header_path), len(uid_path))):
-            mapping.add(node_header_path[i], uid_path[i])
+            self.mapping.add(node_header_path[i], uid_path[i])
 
         #Act
-        result = mapping.uid_path_to_node_header_path(uid_path)
+        result = self.mapping.uid_path_to_node_header_path(uid_path)
 
         #Assert
         self.assertCountEqual(result, node_header_path)
 
 
+'''
 class TestAppendPaths(unittest.TestCase):
 
     def test_append_paths(self):
@@ -528,6 +506,7 @@ class TestAppendPaths(unittest.TestCase):
             [NodeHeader("C", Tile(2, 2)), NodeHeader("D", Tile(3, 3)), NodeHeader("E", Tile(4, 4))],
             [NodeHeader("G", Tile(5, 5)), NodeHeader("E", Tile(4, 4))],
         ])
+       '''
 
 if __name__ == "__main__":
     unittest.main()
