@@ -22,35 +22,28 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     current_node = mapping.node_header_to_uid[start_node]
     end_node_uid = mapping.node_header_to_uid[end_node]
     visited.add(current_node)
-    paths = [[current_node]]
-    #append_paths(paths, current_node, graph, visited)
+    paths = {}
 
     while current_node != end_node_uid:
         for child in {*graph[current_node].internal_children, *graph[current_node].external_children}:
             if child not in visited:
-                for path in graph[current_node].paths:
-                    newpath = [child] + path
-                    graph[child].paths.append(newpath)
+                if current_node not in paths:
+                    paths.update({current_node: [[current_node]]})
+                for path in paths[current_node]:
+                    if child not in paths:
+                        paths.update({child: [[child] + path]})
+                    else:
+                        paths[child].append([child] + path)
                 queue.append(child)
         if not queue:
             break
         current_node = queue.popleft()
-        #append_paths(paths, current_node, graph, visited)
         visited.add(current_node)
 
-    """
-    print(graph[end_node_uid].paths)
-    #print(convert_and_sort(graph[end_node].paths, mapping))
-    print(f"start: {start_node_uid}, end: {end_node_uid}.")
-    print("!!!!!!!!!!!!!!!!")
-    print(matched)
-    print("!!!!!!!!!!!!!!!!")
-    print(convert_and_sort(matched, mapping))
-    """
     start_node_uid = mapping.node_header_to_uid[start_node]
-    matched = get_lists_where_first_and_last_element_matches(graph[end_node_uid].paths, end_node_uid, start_node_uid)
+    matched = get_lists_where_first_and_last_element_matches(paths[end_node_uid], end_node_uid, start_node_uid)
+
     return matched
-    #return get_lists_where_last_element_matches(paths, end_node_uid)
 
 def get_lists_where_first_and_last_element_matches(lists: List, start: str, end: str) -> List:
     """Get all lists where the first and the last element matches the given elements.
@@ -80,24 +73,6 @@ def get_lists_where_last_element_matches(lists: List, elem: str) -> List:
         if tmplist[-1] == elem:
             result_lists.append(tmplist)
     return result_lists
-
-def append_paths(paths: List, current_node: NodeHeader, graph: Dict, visited: Set) -> None:
-    """Append the paths by new found paths.
-
-    :param List paths: The previously found paths.
-    :param Node_Header current: The node for which the children should be appended to the paths.
-    :param Dict graph: The graph containing all nodes.
-    :param Set visited: All previously visited nodes.
-    """
-    new_paths = []
-    for path in paths:
-        if current_node in path:
-            for child in {*graph[current_node].internal_children, *graph[current_node].external_children}:
-                if child not in visited and child not in path:
-                    new_list = path.copy()
-                    new_list.append(child)
-                    new_paths.append(new_list)
-    paths += new_paths
 
 if __name__ == "__main__":
     pass
