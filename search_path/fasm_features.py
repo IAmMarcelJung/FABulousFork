@@ -13,7 +13,6 @@ def create_features(path: List, used_tiles: Set) -> List:
     :rtype: List
     """
     feature_list = []
-    print(path)
     path = peekable(path)
     for elem in path:
         if path:
