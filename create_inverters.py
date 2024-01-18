@@ -33,7 +33,7 @@ def search_in_tile(graph: Dict, tile: Tile, start: str, end: str, mapping: Mappi
 def parse_arguments():
     parser = argparse.ArgumentParser(
             prog='create_inverters',
-            description='Create inverters in a FABulous fabirc.',
+            description='Create inverters in a FABulous fabric.',
             epilog='Text at the bottom of help')
     parser.add_argument("directory", help="Path to the project directory")
 
