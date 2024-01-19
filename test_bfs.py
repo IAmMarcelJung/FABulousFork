@@ -9,9 +9,9 @@ import time
 from search_path.utils import get_tiles_for_fabric, get_all_locations_of_tile_type
 from search_path.mapping import Mapping
 from search_path.tile import Tile, create_tile_from_string
-from search_path.bfs import bfs, append_paths, get_lists_where_last_element_matches
+from search_path.bfs import bfs, get_lists_where_last_element_matches
 from search_path.node import NodeHeader
-from search_path.fasm_features import create_features, append_features_to_file
+from search_path.fasm_features import create_features_with_gnd_and_init, append_features_to_file
 from search_path.graph import get_nodes_from_file, get_nodes_from_file_for_tile, add_parents_and_children_for_tile, create_graph
 
 test_file = "test_features.txt"
@@ -70,8 +70,8 @@ class TestBfs(unittest.TestCase):
         print(f"Target path: {target_path}")
 
         #Assert
-        for path in paths:
-            path.reverse()
+        #for path in paths:
+        #    path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from LA_O to LA_I3")
 
     def test_bfs_X1Y1_turnaround(self):
@@ -91,8 +91,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
-        for path in paths:
-            path.reverse()
+        #for path in paths:
+        #    path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E6END0 to W2MID3")
 
 
@@ -112,8 +112,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
-        for path in paths:
-            path.reverse()
+        #for path in paths:
+        #    path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from E1END0 to LA_I0")
 
     def test_bfs_X0Y1_partial_path(self):
@@ -132,8 +132,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
-        for path in paths:
-            path.reverse()
+        #for path in paths:
+        #    path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X0Y1.E1BEG0")
 
     def test_bfs_io_output_to_lut_input(self):
@@ -153,8 +153,8 @@ class TestBfs(unittest.TestCase):
         paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         #Assert
-        for path in paths:
-            path.reverse()
+        #for path in paths:
+        #    path.reverse()
         print(self.mapping.uid_path_to_node_header_path(target_path))
         self.assertTrue(target_path in paths, "Could not find path from X0Y1.A_O to X1Y1.LA_I0")
 
@@ -182,7 +182,7 @@ class TestBfs(unittest.TestCase):
         target_features = ["X1Y1.GND0.A_T", "X1Y1.GND0.B_T", "X1Y1.LA_O.JW2BEG1", "X1Y1.JW2BEG1.JW2END1", "X1Y1.JW2END1.J_l_AB_BEG3", "X1Y1.J_l_AB_BEG3.J_l_AB_END3", "X1Y1.J_l_AB_END3.LA_I3", "X1Y1.A.INIT[0]", "X1Y1.A.FF"]
         used_tiles = set()
         #Act
-        features = create_features(target_path, used_tiles)
+        features = create_features_with_gnd_and_init(target_path, used_tiles)
         #Assert
         self.assertCountEqual(target_features, features)
 
