@@ -5,7 +5,14 @@ from collections import deque
 
 from search_path.node import NodeHeader
 from search_path.mapping import Mapping
-from search_path.utils import convert_and_sort
+from search_path.utils import convert_paths
+
+def print_nested_list(lst, mapping, depth=0):
+    for element in lst:
+        if isinstance(element, list):
+            print_nested_list(element, mapping, depth + 1)
+        else:
+            print("  " * depth, mapping.uid_to_node_header[element])
 
 def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapping) -> List:
     """Do a breadth first search on the graph from the given start to end node.
@@ -19,29 +26,40 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     """
     queue = deque()
     visited = set()
-    current_node = mapping.node_header_to_uid[start_node]
+    current_node_uid = mapping.node_header_to_uid[start_node]
     end_node_uid = mapping.node_header_to_uid[end_node]
-    visited.add(current_node)
+    visited.add(current_node_uid)
     paths = {}
 
-    while current_node != end_node_uid:
-        for child in {*graph[current_node].internal_children, *graph[current_node].external_children}:
+    while current_node_uid != end_node_uid:
+        all_children = {*graph[current_node_uid].internal_children, *graph[current_node_uid].external_children}
+        for child in all_children:
             if child not in visited:
-                if current_node not in paths:
-                    paths.update({current_node: [[current_node]]})
-                for path in paths[current_node]:
+                if current_node_uid not in paths:
+                    paths.update({current_node_uid: [[current_node_uid]]})
+                for path in paths[current_node_uid]:
                     if child not in paths:
-                        paths.update({child: [[child] + path]})
+                        paths.update({child: [path + [child]]})
                     else:
-                        paths[child].append([child] + path)
+                        paths[child].append(path + [child])
                 queue.append(child)
         if not queue:
+            return []
             break
-        current_node = queue.popleft()
-        visited.add(current_node)
+        current_node_uid = queue.popleft()
+        visited.add(current_node_uid)
 
     start_node_uid = mapping.node_header_to_uid[start_node]
-    matched = get_lists_where_first_and_last_element_matches(paths[end_node_uid], end_node_uid, start_node_uid)
+    try:
+        matched = get_lists_where_first_and_last_element_matches(paths[end_node_uid], start_node_uid, end_node_uid)
+    except KeyError:
+        #[print(mapping.uid_path_to_node_header_path(path)) for path in list(paths.values())[0]]
+        #print(list(paths.values())[0])
+        print_nested_list(list(paths.values()), mapping)
+        print(mapping.uid_to_node_header[current_node_uid])
+        print(mapping.uid_to_node_header[end_node_uid])
+        raise
+
 
     return matched
 
