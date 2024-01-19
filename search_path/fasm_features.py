@@ -5,7 +5,7 @@ import re
 from more_itertools import peekable
 from typing import List, Set
 
-def create_features(path: List, used_tiles: Set) -> List:
+def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
     """ Create the FASM features from the given path.
 
     :param List path: The path for which to create the FASM features.
@@ -31,12 +31,9 @@ def create_features(path: List, used_tiles: Set) -> List:
             next_elem = path.peek()
             sink = next_elem.name
 
-            feature = f"{tile_str}.{source}.{sink}"
-            feature_list.append(feature)
-
             # Add config bits
 
-            pattern = re.compile(r"L[ABCDEFGH]_I3")
+            pattern = re.compile(r"L[ABCDEFGH]_O")
             match = pattern.match(source)
 
             if match:
@@ -45,6 +42,32 @@ def create_features(path: List, used_tiles: Set) -> List:
                 feature_list.append(feature)
                 feature = f"{tile_str}.{matched_letter}.FF"
                 feature_list.append(feature)
+
+            feature = f"{tile_str}.{source}.{sink}"
+            feature_list.append(feature)
+
+    return feature_list
+
+def create_features(path: List, used_tiles: Set) -> List:
+    """ Create the FASM features from the given path.
+
+    :param List path: The path for which to create the FASM features.
+    :return: All features created from the path.
+    :rtype: List
+    """
+    feature_list = []
+    path = peekable(path)
+    for elem in path:
+        if path:
+            tile = elem.tile
+            tile_str = tile.to_string()
+            source = elem.name
+
+            next_elem = path.peek()
+            sink = next_elem.name
+
+            feature = f"{tile_str}.{source}.{sink}"
+            feature_list.append(feature)
 
     return feature_list
 
