@@ -21,7 +21,7 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     :param Node_Header start_node: The start node of the search.
     :param Node_Header end_node: The end node of the search.
     :param Mapping mapping: The mapping of UID to node header.
-    :return: All paths with minimal length
+    :return: All paths with minimal length.
     :rtype: List
     """
     queue = deque()
