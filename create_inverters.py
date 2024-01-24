@@ -84,7 +84,6 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         end_node = NodeHeader("E1BEG0", end_tile)
 
         possible_paths = bfs(graph, start_node, end_node, mapping)
-        #print(mapping.uid_path_to_node_header_path(possible_paths[0]))
 
         path = possible_paths[0]
         existing_paths.append(path)
@@ -124,7 +123,6 @@ def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
         previous_path_index = -1
         while not possible_paths:
             if previous_paths and previous_paths[previous_path_index]:
-                #print(mapping.uid_path_to_node_header_path(previous_paths[previous_path_index]))
                 # Check if there are nodes left to be checked in the previous_path at index previous_path_index
                 if len(previous_paths[previous_path_index]) > abs(previous_path_internal_index):
                     start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
@@ -140,37 +138,17 @@ def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
                     name = start_node.name.replace("3", "0")
                     start_node_tile = start_node.tile
                     start_node = NodeHeader(name, start_node_tile)
-                    #print("Previous path:", end=" ")
-                    #print(mapping.uid_path_to_node_header_path(previous_paths[previous_path_index]))
-
-
             else:
-                #start_tile = Tile(0, 1)
                 start_node = NodeHeader("E1END0", tile)
-
 
             end_node_name = end_node.name.replace("3", "0")
             end_node_tile = end_node.tile
             end_node = NodeHeader(end_node_name, end_node_tile)
-            #end = mapping.uid_to_node_headerpath[-2]
             end_tile = tile
-            #end_node = NodeHeader(end, tile)
-            #end_node = mapping.uid_to_node_header[path[-2]]
-            #print(f"Searching for path from {start_node.tile.to_string()}.{start_node.name} to {end_node.tile.to_string()}.{end_node.name}:", end=' ')
             possible_paths = bfs(graph, start_node, end_node, mapping)
             if possible_paths:
-                #print("FOUND!")
                 path = possible_paths[0]
                 previous_paths.append(path)
-                '''
-                if len(previous_paths) > 2:
-                    print("Previous path -1:", end=" ")
-                    print(mapping.uid_path_to_node_header_path(previous_paths[previous_path_index]))
-                    print("Previous path -2:", end=" ")
-                    print(mapping.uid_path_to_node_header_path(previous_paths[previous_path_index-1]))
-                    '''
-            #else:
-            #    print("NOT FOUND!")
 
         enable_paths.append(path)
     return (inverter_paths, enable_paths)
@@ -217,17 +195,12 @@ if __name__ == "__main__":
     fabric_file = f"{project_directory}/fabric.csv"
 
     tile_type = Tile.Types.LUT4AB
-    #tile_type = Tile.Types.RAM_IO
-
 
     graph, mapping = get_graph_and_mapping(project_directory)
-
 
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
     tiles = tiles[::skip_tiles]
-    io_tile = Tile(0, 1)
-
 
     inverter_paths = []
     enable_paths = []
@@ -262,7 +235,6 @@ if __name__ == "__main__":
 
     for path in header_node_paths_inverter:
         features += create_features_with_gnd_and_init(path, used_tiles)
-
 
     for path in header_node_paths_enable:
         features += create_features(path, used_tiles)
