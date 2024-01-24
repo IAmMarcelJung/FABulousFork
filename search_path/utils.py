@@ -19,6 +19,10 @@ def transpose_csv(input_file, output_file):
 def get_tiles_for_fabric(fabric_file: str):
     """
     Read the fabric.csv file and assign the type of tile to the position.
+
+    :param str fabric_file: The path of the fabric file.
+    :return: A dictionary with the tile as the key and the name of the tile as the value.
+    :rtype: Dict
     """
     tiles = {}
     with open(fabric_file) as f:
@@ -40,6 +44,11 @@ def get_tiles_for_fabric(fabric_file: str):
 def get_all_locations_of_tile_type(tile_type: str, tiles: Dict):
     """
     Get all locations of the specified tile type.
+
+    :param str tile_type: The type of the tile.
+    :param Dict tiles: The dictionary using the tile location as a key and the tile name as the value.
+    :return: All locations of a certain tile type.
+    :rtype: List
     """
     # Check if tile_type is a non-empty string
     if not isinstance(tile_type, str) or not tile_type:
@@ -62,6 +71,10 @@ def get_all_locations_of_tile_type(tile_type: str, tiles: Dict):
 def get_all_locations_of_tiles(tiles: Dict):
     """
     Get all locations of all tiles.
+
+    :param Dict tiles: A dictionary containing the tile location as a key and the tile name as a value.
+    :return: All locations of all tiles.
+    :rtype: List
     """
     locations = []
     for key in tiles.keys():
