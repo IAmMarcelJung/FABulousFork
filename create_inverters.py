@@ -246,14 +246,8 @@ if __name__ == "__main__":
     '''
     for tile in tqdm(tiles):
         tmp_inverter_paths, tmp_enable_paths = find_paths_in_tile(tile, graph, mapping)
-        inverter_paths.append(tmp_inverter_paths)
-        enable_paths.append(tmp_enable_paths)
-            #        [print(mapping.uid_path_to_node_header_path(path)) for path in possible_paths]
-    '''
-    for path in paths:
-        inverter_paths.append(path[0])
-        enable_paths.append(path[1])
-        '''
+        inverter_paths.append(tmp_inverter_paths[0])
+        enable_paths.append(tmp_enable_paths[0])
 
     max_column_number = get_max_column_number(tiles)
 
@@ -263,7 +257,6 @@ if __name__ == "__main__":
     header_node_paths_enable = convert_paths(enable_paths, mapping)
 
     header_node_paths_inverter.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
-    print(header_node_paths_inverter)
     features = []
     used_tiles = set()
 
