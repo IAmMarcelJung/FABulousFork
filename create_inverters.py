@@ -182,6 +182,7 @@ def get_graph_and_mapping(project_dir: str):
 
 if __name__ == "__main__":
 
+    # Prepare variables
     cpu_cores = min(multiprocessing.cpu_count(), 32)
 
     args = parse_arguments()
@@ -196,12 +197,14 @@ if __name__ == "__main__":
 
     tile_type = Tile.Types.LUT4AB
 
+    # Get the graph, the mapping and the tiles
     graph, mapping = get_graph_and_mapping(project_directory)
 
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
     tiles = tiles[::skip_tiles]
 
+    # Find the paths
     inverter_paths = []
     enable_paths = []
     paths = []
@@ -230,6 +233,8 @@ if __name__ == "__main__":
     header_node_paths_enable = convert_paths(enable_paths, mapping)
 
     header_node_paths_inverter.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
+
+    # Add the features
     features = []
     used_tiles = set()
 
