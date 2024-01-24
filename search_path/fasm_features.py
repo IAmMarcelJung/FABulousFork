@@ -20,8 +20,8 @@ def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
             tile_str = tile.to_string()
             source = elem.name
 
-            # Add GND
-            if tile not in used_tiles:
+            # Add GND to IO tiles
+            if tile.x == 0:
                 used_tiles.add(tile)
                 gnd_feature = f"{tile_str}.GND0.A_T"
                 feature_list.append(gnd_feature)
