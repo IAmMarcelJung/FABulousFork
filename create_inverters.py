@@ -7,7 +7,7 @@ import pickle
 
 from joblib import Parallel, delayed
 from tqdm import tqdm
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from search_path.mapping import Mapping
 from search_path.node import NodeHeader
@@ -55,7 +55,7 @@ def get_max_column_number(tiles: List):
             tile_columns.append(tile.x)
     return max_column
 
-def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph: Dict, mapping: Mapping):
+def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph: Dict, mapping: Mapping, driven_nodes: Set):
     """
     Connect all tiles in the top row.
 
@@ -71,10 +71,14 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         end_tile = Tile(x+1, 1)
         end_node = NodeHeader("E1END0", end_tile)
 
-        possible_paths = bfs(graph, start_node, end_node, mapping)
+        possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes)
 
         path = possible_paths[0]
+        driven_nodes.update(path[1:])
         existing_paths.append(path)
+
+    #for node in driven_nodes:
+    #    print(mapping.uid_to_node_header[node])
 
     for x in range(1, max_column_number):
         start_tile = Tile(x, 1)
@@ -83,11 +87,13 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         end_tile = Tile(x, 1)
         end_node = NodeHeader("E1BEG0", end_tile)
 
-        possible_paths = bfs(graph, start_node, end_node, mapping)
+        possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes)
 
         path = possible_paths[0]
+        driven_nodes.update(path[1:])
         existing_paths.append(path)
-def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
+
+def find_inverter_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List):
     """
     Find the paths in a tile.
 
@@ -97,28 +103,36 @@ def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
     """
     previous_paths = []
     inverter_paths = []
-    enable_paths = []
-    for lut in luts_in_tile:
+    unrouted_paths = 0
+    for lut in luts:
         # Inverter routing
         start = f"L{lut}_O"
         end = f"L{lut}_I3"
         start_node = NodeHeader(start, tile)
         end_node = NodeHeader(end, tile)
-        possible_paths = bfs(graph, start_node, end_node, mapping)
-        path = possible_paths[0]
-        inverter_paths.append(path)
+        possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes)
+        if len(possible_paths) > 0:
+            path = possible_paths[0]
+            driven_nodes.update(path[1:])
+            #print(driven_nodes)
+            inverter_paths.append(path)
+            #print("Routed inverters of LUT {lut}")
+        else:
+            unrouted_paths += 1
+
+    return inverter_paths, unrouted_paths
+
+def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List):
+    previous_paths = []
+    enable_paths = []
+    for lut in luts:
+        # Enable routing
+        end = f"L{lut}_I0"
+        end_node = NodeHeader(end, tile)
 
         # Routing for the inverter enable path
-        '''
-        start = f"A_O"
-        if not created_input:
-            start_tile = Tile(0, 1)
-        elif lut == "A":
-            start_tile = previous_tile
-        else:
-            start_tile =  tile
-        '''
         possible_paths = []
+        # Do not start with the end node, since it has no following node
         previous_path_internal_index = -2
         previous_path_index = -1
         while not possible_paths:
@@ -130,10 +144,12 @@ def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
                     start_node_tile = start_node.tile
                     start_node = NodeHeader(name, start_node_tile)
                     previous_path_internal_index -= 1
+                    print(f"Next internal index is {previous_path_internal_index}")
                 # No nodes left in the previous_path at index previous_path_index, decrement index to get the path before
                 else:
                     previous_path_index -= 1
                     previous_path_internal_index = -2
+                    print(f"No nodes left, trying path {previous_path_index}")
                     start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
                     name = start_node.name.replace("3", "0")
                     start_node_tile = start_node.tile
@@ -144,14 +160,16 @@ def find_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping):
             end_node_name = end_node.name.replace("3", "0")
             end_node_tile = end_node.tile
             end_node = NodeHeader(end_node_name, end_node_tile)
-            end_tile = tile
-            possible_paths = bfs(graph, start_node, end_node, mapping)
+            possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes)
+            # found at least one path
             if possible_paths:
                 path = possible_paths[0]
+                driven_nodes.update(path[1:])
                 previous_paths.append(path)
 
         enable_paths.append(path)
-    return (inverter_paths, enable_paths)
+    return enable_paths
+    #return (inverter_paths, enable_paths)
 
 def get_graph_and_mapping(project_dir: str):
     """
@@ -208,26 +226,23 @@ if __name__ == "__main__":
     inverter_paths = []
     enable_paths = []
     paths = []
-    print("Searching for possible paths:")
-    '''
-    paths += list(
-            tqdm(
-                Parallel(return_as="generator", n_jobs=cpu_cores)(
-                    delayed(find_paths_in_tile)(tile, graph, mapping) for tile in tiles
-                ),
-                total=len(tiles),
-            )
-        )
-
-    '''
-    for tile in tqdm(tiles):
-        tmp_inverter_paths, tmp_enable_paths = find_paths_in_tile(tile, graph, mapping)
-        inverter_paths.append(tmp_inverter_paths[0])
-        enable_paths.append(tmp_enable_paths[0])
-
+    driven_nodes = set()
     max_column_number = get_max_column_number(tiles)
+    connect_tiles_in_top_row(max_column_number, enable_paths, graph, mapping, driven_nodes)
 
-    connect_tiles_in_top_row(max_column_number, enable_paths, graph, mapping)
+    print("Searching for possible paths:")
+    for tile in tqdm(tiles):
+        tmp_enable_paths = find_enable_paths_in_tile(tile, graph, mapping, driven_nodes, luts)
+        for path in tmp_enable_paths:
+            #print(mapping.uid_path_to_node_header_path(path))
+            enable_paths.append(path)
+
+    unrouted_paths = 0
+    for tile in tqdm(tiles):
+        tmp_inverter_paths, tmp_unrouted_paths = find_inverter_paths_in_tile(tile, graph, mapping, driven_nodes, luts)
+        unrouted_paths += tmp_unrouted_paths
+        for path in tmp_inverter_paths:
+            inverter_paths.append(path)
 
     header_node_paths_inverter = convert_paths(inverter_paths, mapping)
     header_node_paths_enable = convert_paths(enable_paths, mapping)
@@ -249,3 +264,4 @@ if __name__ == "__main__":
     except(FileNotFoundError) as e:
         print(f"Error: {e}")
         exit(1)
+    print(f"Number of unrouted paths: {unrouted_paths}")
