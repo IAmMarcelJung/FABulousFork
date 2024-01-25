@@ -6,6 +6,7 @@ from collections import deque
 from search_path.node import NodeHeader
 from search_path.mapping import Mapping
 from search_path.utils import convert_paths
+from search_path.tile import Tile
 
 def print_nested_list(lst, mapping, depth=0):
     for element in lst:
@@ -14,7 +15,8 @@ def print_nested_list(lst, mapping, depth=0):
         else:
             print("  " * depth, mapping.uid_to_node_header[element])
 
-def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapping, driven_nodes: Set) -> List:
+
+def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapping, driven_nodes: Set, max_depth: int) -> List:
     """Do a breadth first search on the graph from the given start to end node.
 
     :param Dict graph: The graph in which to search the path.
@@ -30,12 +32,12 @@ def bfs(graph: Dict, start_node: NodeHeader, end_node: NodeHeader, mapping: Mapp
     end_node_uid = mapping.node_header_to_uid[end_node]
     visited.add(current_node_uid)
     paths = {}
-    print(f"Searching path from {start_node.tile}.{start_node.name} to {end_node.tile}.{end_node.name}")
+    #print(f"Searching path from {start_node.tile}.{start_node.name} to {end_node.tile}.{end_node.name}")
     depth = 0
     #for node in driven_nodes:
     #    print(mapping.uid_to_node_header[node])
     while current_node_uid != end_node_uid:
-        if depth > 15:
+        if depth > max_depth:
             return []
             break
         #paths.update({current_node_uid: [[current_node_uid]]})
