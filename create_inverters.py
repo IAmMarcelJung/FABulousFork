@@ -133,8 +133,7 @@ def find_inverter_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, drive
 
     return inverter_paths, unrouted_paths
 
-def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List):
-    previous_paths = []
+def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List, previous_paths: List):
     enable_paths = []
     for lut in luts:
         # Enable routing
@@ -148,29 +147,39 @@ def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_
         previous_path_index = -1
         while not possible_paths:
             if previous_paths and previous_paths[previous_path_index]:
-                # Check if there are nodes left to be checked in the previous_path at index previous_path_index
-                if len(previous_paths[previous_path_index]) > abs(previous_path_internal_index):
-                    start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
-                    name = start_node.name.replace("3", "0")
-                    start_node_tile = start_node.tile
-                    start_node = NodeHeader(name, start_node_tile)
-                    previous_path_internal_index -= 1
-                    #print(f"Next internal index is {previous_path_internal_index}")
-                # No nodes left in the previous_path at index previous_path_index, decrement index to get the path before
+                if tile.x == 1 and lut == "A":
+                    start_node = NodeHeader("E1END0", tile)
+                    print(f"Using {start_node.tile}{start_node.name}")
+
                 else:
-                    previous_path_index -= 1
-                    previous_path_internal_index = -2
-                    #print(f"No nodes left, trying path {previous_path_index}")
-                    start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
-                    name = start_node.name.replace("3", "0")
-                    start_node_tile = start_node.tile
-                    start_node = NodeHeader(name, start_node_tile)
+                    # Check if there are nodes left to be checked in the previous_path at index previous_path_index
+                    if len(previous_paths[previous_path_index]) >= abs(previous_path_internal_index):
+                        start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
+                        name = start_node.name.replace("3", "0")
+                        start_node_tile = start_node.tile
+                        start_node = NodeHeader(name, start_node_tile)
+                        previous_path_internal_index -= 1
+                        #print(f"Next internal index is {previous_path_internal_index}")
+                    # No nodes left in the previous_path at index previous_path_index, decrement index to get the path before
+                    else:
+                        previous_path_index -= 1
+                        previous_path_internal_index = -2
+                        #print(f"No nodes left, trying path {previous_path_index}")
+                        if len(previous_paths) >= abs(previous_path_index):
+                            start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
+                            name = start_node.name.replace("3", "0")
+                            start_node_tile = start_node.tile
+                            start_node = NodeHeader(name, start_node_tile)
+                        else:
+                            print(f"Could not route enable path to {end_node.tile}.{end_node.name}")
+                            exit(1)
             else:
                 start_node = NodeHeader("E1END0", tile)
 
             end_node_name = end_node.name.replace("3", "0")
             end_node_tile = end_node.tile
             end_node = NodeHeader(end_node_name, end_node_tile)
+            print(f"searching from {start_node.tile}.{start_node.name} to {end_node_tile}.{end_node_name}")
             possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes, 13)
             # found at least one path
             if possible_paths:
@@ -180,7 +189,6 @@ def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_
 
         enable_paths.append(path)
     return enable_paths
-    #return (inverter_paths, enable_paths)
 
 def get_graph_and_mapping(project_dir: str):
     """
@@ -232,6 +240,8 @@ if __name__ == "__main__":
     tiles = get_tiles_for_fabric(fabric_file)
     tiles = get_all_locations_of_tile_type(tile_type, tiles)
     tiles = tiles[::skip_tiles]
+    tiles.sort(key=lambda tile: (tile.x, tile.y))
+    print(tiles)
 
     # Find the paths
     inverter_paths = []
@@ -246,7 +256,8 @@ if __name__ == "__main__":
 
     print("Searching for possible paths:")
     for tile in tqdm(tiles):
-        tmp_enable_paths = find_enable_paths_in_tile(tile, graph, mapping, driven_nodes, luts)
+        print(tile)
+        tmp_enable_paths = find_enable_paths_in_tile(tile, graph, mapping, driven_nodes, luts, enable_paths)
         for path in tmp_enable_paths:
             #print(mapping.uid_path_to_node_header_path(path))
             enable_paths.append(path)
