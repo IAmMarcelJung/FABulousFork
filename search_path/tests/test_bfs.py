@@ -23,13 +23,11 @@ from modules.graph import (
 test_dir = os.path.join(os.path.dirname(__file__), "test_files")
 test_file = os.path.join(test_dir, "test_features.txt")
 fabric_file = os.path.join(test_dir, "fabric.csv")
-# fabric_file = "tests/test_files/fabric.csv"
 default_max_depth = 15
 
 
 class TestBfs(unittest.TestCase):
     graph = {}
-    # pip_file = "tests/test_files/pips.txt"
     pip_file = os.path.join(test_dir, "pips.txt")
     mapping = Mapping()
     graph = create_graph(pip_file, mapping)
