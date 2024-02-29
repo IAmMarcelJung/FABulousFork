@@ -20,8 +20,8 @@ def bfs(
     start_node: NodeHeader,
     end_node: NodeHeader,
     mapping: Mapping,
-    driven_nodes: Set,
-    max_depth: int,
+    driven_nodes: Set = set(),
+    max_depth: int = 15,
 ) -> List:
     """Do a breadth first search on the graph from the given start to end node.
 
