@@ -40,14 +40,10 @@ def bfs(
     end_node_uid = mapping.node_header_to_uid[end_node]
     visited.add(current_node_uid)
     paths = {}
-    # print(f"Searching path from {start_node.tile}.{start_node.name} to {end_node.tile}.{end_node.name}")
     depth = 0
-    # for node in driven_nodes:
-    #    print(mapping.uid_to_node_header[node])
     while current_node_uid != end_node_uid:
         if depth > max_depth:
             return []
-        # paths.update({current_node_uid: [[current_node_uid]]})
         all_children = {
             *graph[current_node_uid].internal_children,
             *graph[current_node_uid].external_children,
@@ -81,8 +77,6 @@ def bfs(
             paths[end_node_uid], start_node_uid, end_node_uid
         )
     except KeyError:
-        # [print(mapping.uid_path_to_node_header_path(path)) for path in list(paths.values())[0]]
-        # print(list(paths.values())[0])
         print_nested_list(list(paths.values()), mapping)
         print(mapping.uid_to_node_header[current_node_uid])
         print(mapping.uid_to_node_header[end_node_uid])
