@@ -5,8 +5,9 @@ import re
 from more_itertools import peekable
 from typing import List, Set
 
+
 def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
-    """ Create the FASM features from the given path.
+    """Create the FASM features from the given path.
 
     :param List path: The path for which to create the FASM features.
     :return: All features created from the path.
@@ -48,8 +49,9 @@ def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
 
     return feature_list
 
+
 def create_features(path: List, used_tiles: Set) -> List:
-    """ Create the FASM features from the given path.
+    """Create the FASM features from the given path.
 
     :param List path: The path for which to create the FASM features.
     :return: All features created from the path.
@@ -70,6 +72,7 @@ def create_features(path: List, used_tiles: Set) -> List:
             feature_list.append(feature)
 
     return feature_list
+
 
 def append_features_to_file(features: List, file: str) -> None:
     """Append the features to an existing file.
@@ -99,14 +102,16 @@ def append_features_to_file(features: List, file: str) -> None:
     else:
         raise FileNotFoundError(f"Error: File {file} not found")
 
+
 def extract_start_tile_from_feature(feature: str):
-    """ Extract the start tile of a wire from a feature.
+    """Extract the start tile of a wire from a feature.
 
     :param str feature: The feature where to extract the start tile from.
     :return: The start tile of the wire.
     :rtype: str
     """
     return feature.split(".")[0]
+
 
 if __name__ == "__main__":
     pass

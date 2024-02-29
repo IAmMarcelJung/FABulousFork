@@ -2,7 +2,6 @@
 import multiprocessing
 import argparse
 import os
-import copy
 import pickle
 
 from joblib import Parallel, delayed
@@ -14,8 +13,18 @@ from search_path.node import NodeHeader
 from search_path.tile import Tile
 from search_path.bfs import bfs
 from search_path.graph import create_graph
-from search_path.utils import get_all_locations_of_tile_type, get_tiles_for_fabric, convert_paths, sort_list_by_tile
-from search_path.fasm_features import append_features_to_file, create_features_with_gnd_and_init, create_features
+from search_path.utils import (
+    get_all_locations_of_tile_type,
+    get_tiles_for_fabric,
+    convert_paths,
+    sort_list_by_tile,
+)
+from search_path.fasm_features import (
+    append_features_to_file,
+    create_features_with_gnd_and_init,
+    create_features,
+)
+
 
 def parse_arguments():
     """
@@ -25,8 +34,8 @@ def parse_arguments():
     :rtype: argarse.Namespace
     """
     parser = argparse.ArgumentParser(
-            prog='create_inverters',
-            description='Create inverters in a FABulous fabric.')
+        prog="create_inverters", description="Create inverters in a FABulous fabric."
+    )
     parser.add_argument("directory", help="Path to the project directory.")
     parser.add_argument("-t", type=int, default=1, help="Number of tiles to skip.")
     parser.add_argument("-l", type=int, default=1, help="Number of LUTs to skip.")
@@ -37,6 +46,7 @@ def parse_arguments():
         print(f"Error {directory_path} not found")
         exit(1)
     return args
+
 
 def get_max_column_number(tiles: List):
     """
@@ -55,7 +65,14 @@ def get_max_column_number(tiles: List):
             tile_columns.append(tile.x)
     return max_column
 
-def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph: Dict, mapping: Mapping, driven_nodes: Set):
+
+def connect_tiles_in_top_row(
+    max_column_number: int,
+    existing_paths: List,
+    graph: Dict,
+    mapping: Mapping,
+    driven_nodes: Set,
+):
     """
     Connect all tiles in the top row.
 
@@ -79,7 +96,7 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         start_tile = Tile(x, 1)
         start_node = NodeHeader("E1BEG0", start_tile)
 
-        end_tile = Tile(x+1, 1)
+        end_tile = Tile(x + 1, 1)
         end_node = NodeHeader("E1END0", end_tile)
 
         possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes, 15)
@@ -88,7 +105,7 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         driven_nodes.update(path[1:])
         existing_paths.append(path)
 
-    #for node in driven_nodes:
+    # for node in driven_nodes:
     #    print(mapping.uid_to_node_header[node])
 
     for x in range(1, max_column_number):
@@ -104,7 +121,10 @@ def connect_tiles_in_top_row(max_column_number: int, existing_paths: List, graph
         driven_nodes.update(path[1:])
         existing_paths.append(path)
 
-def find_inverter_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List):
+
+def find_inverter_paths_in_tile(
+    tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List
+):
     """
     Find the paths in a tile.
 
@@ -125,15 +145,23 @@ def find_inverter_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, drive
         if len(possible_paths) > 0:
             path = possible_paths[0]
             driven_nodes.update(path[1:])
-            #print(driven_nodes)
+            # print(driven_nodes)
             inverter_paths.append(path)
-            #print("Routed inverters of LUT {lut}")
+            # print("Routed inverters of LUT {lut}")
         else:
             unrouted_paths += 1
 
     return inverter_paths, unrouted_paths
 
-def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_nodes: Set, luts: List, previous_paths: List):
+
+def find_enable_paths_in_tile(
+    tile: Tile,
+    graph: Dict,
+    mapping: Mapping,
+    driven_nodes: Set,
+    luts: List,
+    previous_paths: List,
+):
     enable_paths = []
     for lut in luts:
         # Enable routing
@@ -153,25 +181,37 @@ def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_
 
                 else:
                     # Check if there are nodes left to be checked in the previous_path at index previous_path_index
-                    if len(previous_paths[previous_path_index]) >= abs(previous_path_internal_index):
-                        start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
+                    if len(previous_paths[previous_path_index]) >= abs(
+                        previous_path_internal_index
+                    ):
+                        start_node = mapping.uid_to_node_header[
+                            previous_paths[previous_path_index][
+                                previous_path_internal_index
+                            ]
+                        ]
                         name = start_node.name.replace("3", "0")
                         start_node_tile = start_node.tile
                         start_node = NodeHeader(name, start_node_tile)
                         previous_path_internal_index -= 1
-                        #print(f"Next internal index is {previous_path_internal_index}")
+                        # print(f"Next internal index is {previous_path_internal_index}")
                     # No nodes left in the previous_path at index previous_path_index, decrement index to get the path before
                     else:
                         previous_path_index -= 1
                         previous_path_internal_index = -2
-                        #print(f"No nodes left, trying path {previous_path_index}")
+                        # print(f"No nodes left, trying path {previous_path_index}")
                         if len(previous_paths) >= abs(previous_path_index):
-                            start_node = mapping.uid_to_node_header[previous_paths[previous_path_index][previous_path_internal_index]]
+                            start_node = mapping.uid_to_node_header[
+                                previous_paths[previous_path_index][
+                                    previous_path_internal_index
+                                ]
+                            ]
                             name = start_node.name.replace("3", "0")
                             start_node_tile = start_node.tile
                             start_node = NodeHeader(name, start_node_tile)
                         else:
-                            print(f"Could not route enable path to {end_node.tile}.{end_node.name}")
+                            print(
+                                f"Could not route enable path to {end_node.tile}.{end_node.name}"
+                            )
                             exit(1)
             else:
                 start_node = NodeHeader("E1END0", tile)
@@ -179,7 +219,9 @@ def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_
             end_node_name = end_node.name.replace("3", "0")
             end_node_tile = end_node.tile
             end_node = NodeHeader(end_node_name, end_node_tile)
-            print(f"searching from {start_node.tile}.{start_node.name} to {end_node_tile}.{end_node_name}")
+            print(
+                f"searching from {start_node.tile}.{start_node.name} to {end_node_tile}.{end_node_name}"
+            )
             possible_paths = bfs(graph, start_node, end_node, mapping, driven_nodes, 13)
             # found at least one path
             if possible_paths:
@@ -190,6 +232,7 @@ def find_enable_paths_in_tile(tile: Tile, graph: Dict, mapping: Mapping, driven_
         enable_paths.append(path)
     return enable_paths
 
+
 def get_graph_and_mapping(project_dir: str):
     """
     Get the graph either from the function or the previously stored file.
@@ -199,10 +242,10 @@ def get_graph_and_mapping(project_dir: str):
     """
     mapping = Mapping()
     path = project_dir + "data.pkl"
-    #TODO: Try to check if the fabric has changed, so the graph has to be recreated
-    if os.path.exists(path) :
+    # TODO: Try to check if the fabric has changed, so the graph has to be recreated
+    if os.path.exists(path):
         print("Previously_created data found, reading it...")
-        with open(path, 'rb') as file:
+        with open(path, "rb") as file:
             data = pickle.load(file)
             graph = data["graph"]
             mapping = data["mapping"]
@@ -213,9 +256,10 @@ def get_graph_and_mapping(project_dir: str):
         data.update({"graph": graph})
         data.update({"mapping": mapping})
         print(f"Storing graph in: {path}")
-        with open(path, 'wb') as file:
+        with open(path, "wb") as file:
             pickle.dump(data, file)
     return graph, mapping
+
 
 if __name__ == "__main__":
 
@@ -248,24 +292,30 @@ if __name__ == "__main__":
     enable_paths = []
     paths = []
     driven_nodes = set()
-    #driven_nodes.add(NodeHeader("E6BEG0", Tile(0, 1)))
-    #driven_nodes.add(NodeHeader("E6END0", Tile(0, 1)))
+    # driven_nodes.add(NodeHeader("E6BEG0", Tile(0, 1)))
+    # driven_nodes.add(NodeHeader("E6END0", Tile(0, 1)))
 
     max_column_number = get_max_column_number(tiles)
-    connect_tiles_in_top_row(max_column_number, enable_paths, graph, mapping, driven_nodes)
+    connect_tiles_in_top_row(
+        max_column_number, enable_paths, graph, mapping, driven_nodes
+    )
 
     print("Searching for possible paths:")
     for tile in tqdm(tiles):
         print(tile)
-        tmp_enable_paths = find_enable_paths_in_tile(tile, graph, mapping, driven_nodes, luts, enable_paths)
+        tmp_enable_paths = find_enable_paths_in_tile(
+            tile, graph, mapping, driven_nodes, luts, enable_paths
+        )
         for path in tmp_enable_paths:
-            #print(mapping.uid_path_to_node_header_path(path))
+            # print(mapping.uid_path_to_node_header_path(path))
             enable_paths.append(path)
 
     unrouted_paths = 0
     routed_paths = 0
     for tile in tqdm(tiles):
-        tmp_inverter_paths, tmp_unrouted_paths = find_inverter_paths_in_tile(tile, graph, mapping, driven_nodes, luts)
+        tmp_inverter_paths, tmp_unrouted_paths = find_inverter_paths_in_tile(
+            tile, graph, mapping, driven_nodes, luts
+        )
         unrouted_paths += tmp_unrouted_paths
         for path in tmp_inverter_paths:
             inverter_paths.append(path)
@@ -274,7 +324,9 @@ if __name__ == "__main__":
     header_node_paths_inverter = convert_paths(inverter_paths, mapping)
     header_node_paths_enable = convert_paths(enable_paths, mapping)
 
-    header_node_paths_inverter.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
+    header_node_paths_inverter.sort(
+        key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y)
+    )
 
     # Add the features
     features = []
@@ -287,8 +339,10 @@ if __name__ == "__main__":
         features += create_features(path, used_tiles)
 
     try:
-        append_features_to_file(features, f"{project_directory}/user_design/sequential_16bit_en.fasm")
-    except(FileNotFoundError) as e:
+        append_features_to_file(
+            features, f"{project_directory}/user_design/sequential_16bit_en.fasm"
+        )
+    except FileNotFoundError as e:
         print(f"Error: {e}")
         exit(1)
     print(f"Number of unrouted inverter paths: {unrouted_paths}")

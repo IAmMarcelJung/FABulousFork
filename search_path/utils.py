@@ -16,6 +16,7 @@ def transpose_csv(input_file, output_file):
     with open(output_file, "w") as f_out:
         csv.writer(f_out).writerows(a)
 
+
 def get_tiles_for_fabric(fabric_file: str):
     """
     Read the fabric.csv file and assign the type of tile to the position.
@@ -38,8 +39,9 @@ def get_tiles_for_fabric(fabric_file: str):
                     break
                 tile_list.append(elem)
             for x, tile in enumerate(tile_list):
-                tiles.update({Tile(x, y-1): tile})
+                tiles.update({Tile(x, y - 1): tile})
     return tiles
+
 
 def get_all_locations_of_tile_type(tile_type: str, tiles: Dict):
     """
@@ -62,11 +64,12 @@ def get_all_locations_of_tile_type(tile_type: str, tiles: Dict):
     for key, value in tiles.items():
         if not isinstance(value, str):
             raise TypeError("Invalid tile type in tiles dictionary")
-        #if tiles[key] == tile_type:
+        # if tiles[key] == tile_type:
         if value == tile_type:
             locations.append(key)
 
     return locations
+
 
 def get_all_locations_of_tiles(tiles: Dict):
     """
@@ -78,9 +81,14 @@ def get_all_locations_of_tiles(tiles: Dict):
     """
     locations = []
     for key in tiles.keys():
-        if tiles[key] not in [Tile.Types.N_term_RAM_IO, Tile.Types.RAM_IO, Tile.Types.S_term_RAM_IO]:
+        if tiles[key] not in [
+            Tile.Types.N_term_RAM_IO,
+            Tile.Types.RAM_IO,
+            Tile.Types.S_term_RAM_IO,
+        ]:
             locations.append(key)
     return locations
+
 
 def convert_paths(paths: List, mapping: Mapping):
     """
@@ -97,8 +105,9 @@ def convert_paths(paths: List, mapping: Mapping):
             header_node_path = mapping.uid_path_to_node_header_path(path)
             header_node_paths.append(header_node_path)
 
-    #header_node_paths.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
+    # header_node_paths.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
     return header_node_paths
+
 
 def sort_list_by_tile(lst: List):
     """
@@ -109,6 +118,7 @@ def sort_list_by_tile(lst: List):
     """
     lst.sort(key=lambda inner_list: (inner_list[0].tile.x, inner_list[0].tile.y))
     return lst
+
 
 if __name__ == "__main__":
     pass

@@ -1,6 +1,7 @@
 #!/bin/python
 from search_path.node import NodeHeader
 
+
 class Mapping:
     """Defines a mapping from UID to NodeHeader and back.
 
@@ -26,7 +27,6 @@ class Mapping:
             return True
         else:
             return False
-
 
         """
         if node_header in self.uid_to_node_header.values():
