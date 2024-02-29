@@ -78,9 +78,7 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(
-            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
-        )
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         print(f"expected paths: {paths}")
         print(f"Target path: {target_path}")
@@ -108,9 +106,7 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(
-            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
-        )
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         # Assert
         self.assertTrue(
@@ -137,9 +133,7 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(
-            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
-        )
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         # Assert
         self.assertTrue(
@@ -159,9 +153,7 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(
-            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
-        )
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         # Assert
         self.assertTrue(
@@ -191,9 +183,7 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(
-            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
-        )
+        paths = bfs(self.graph, start_node, end_node, self.mapping)
 
         # Assert
         print(self.mapping.uid_path_to_node_header_path(target_path))
