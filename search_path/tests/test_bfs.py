@@ -20,16 +20,19 @@ from modules.graph import (
     create_graph,
 )
 
-test_file = "test_features.txt"
-fabric_file = "tests/test_files/fabric.csv"
+test_dir = os.path.join(os.path.dirname(__file__), "test_files")
+test_file = os.path.join(test_dir, "test_features.txt")
+fabric_file = os.path.join(test_dir, "fabric.csv")
+# fabric_file = "tests/test_files/fabric.csv"
 default_max_depth = 15
 
 
 class TestBfs(unittest.TestCase):
     graph = {}
-    file = "tests/test_files/pips.txt"
+    # pip_file = "tests/test_files/pips.txt"
+    pip_file = os.path.join(test_dir, "pips.txt")
     mapping = Mapping()
-    graph = create_graph(file, mapping)
+    graph = create_graph(pip_file, mapping)
 
     def setUp(self):
         self.startTime = time.time()
@@ -85,8 +88,6 @@ class TestBfs(unittest.TestCase):
         print(f"Target path: {target_path}")
 
         # Assert
-        # for path in paths:
-        #    path.reverse()
         self.assertTrue(target_path in paths, "Could not find path from LA_O to LA_I3")
 
     def test_bfs_X1Y1_turnaround(self):
@@ -114,8 +115,6 @@ class TestBfs(unittest.TestCase):
         )
 
         # Assert
-        # for path in paths:
-        #    path.reverse()
         self.assertTrue(
             target_path in paths, "Could not find path from E6END0 to W2MID3"
         )
@@ -145,8 +144,6 @@ class TestBfs(unittest.TestCase):
         )
 
         # Assert
-        # for path in paths:
-        #    path.reverse()
         self.assertTrue(
             target_path in paths, "Could not find path from E1END0 to LA_I0"
         )
@@ -169,8 +166,6 @@ class TestBfs(unittest.TestCase):
         )
 
         # Assert
-        # for path in paths:
-        #    path.reverse()
         self.assertTrue(
             target_path in paths, "Could not find path from X0Y1.A_O to X0Y1.E1BEG0"
         )
@@ -203,8 +198,6 @@ class TestBfs(unittest.TestCase):
         )
 
         # Assert
-        # for path in paths:
-        #    path.reverse()
         print(self.mapping.uid_path_to_node_header_path(target_path))
         self.assertTrue(
             target_path in paths, "Could not find path from X0Y1.A_O to X1Y1.LA_I0"
@@ -450,7 +443,6 @@ class TestBfs(unittest.TestCase):
         # Arrange
         tile = Tile(0, 0)
         uid_path = [0, 1, 2, 3]
-        mapping = Mapping()
         node_header_path = [
             NodeHeader("A", tile),
             NodeHeader("B", tile),
@@ -473,7 +465,6 @@ class TestBfs(unittest.TestCase):
         # Arrange
         tile = Tile(0, 0)
         uid_path = [0, 1, 2, 3]
-        mapping = Mapping()
         node_header_path = [
             NodeHeader("A", tile),
             NodeHeader("B", tile),

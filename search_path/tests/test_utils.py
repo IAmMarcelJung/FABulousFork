@@ -1,4 +1,6 @@
 import unittest
+
+from context import modules
 from modules.utils import get_all_locations_of_tile_type
 
 
@@ -95,7 +97,7 @@ class TestGetAllLocationsOfTileType(unittest.TestCase):
 
         # Act and Assert
         with self.assertRaises(ValueError):
-            get_all_locations_of_tile_type(None, tiles)
+            get_all_locations_of_tile_type(None, tiles)  # type: ignore
 
     def test_none_tiles(self):
         """Test when the tiles dictionary is None."""
@@ -103,7 +105,7 @@ class TestGetAllLocationsOfTileType(unittest.TestCase):
 
         # Act and Assert
         with self.assertRaises(ValueError):
-            get_all_locations_of_tile_type("grass", None)
+            get_all_locations_of_tile_type("grass", None)  # type: ignore
 
 
 if __name__ == "__main__":

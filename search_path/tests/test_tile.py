@@ -1,5 +1,6 @@
 import unittest
 
+from context import modules
 from modules.tile import Tile, create_tile_from_string
 
 

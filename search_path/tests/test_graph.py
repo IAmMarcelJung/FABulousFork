@@ -1,6 +1,8 @@
 #!/bin/python3
 import unittest
+import os
 
+from context import modules
 from modules.mapping import Mapping
 from modules.tile import Tile
 from modules.node import NodeHeader
@@ -15,9 +17,8 @@ class TestGraph(unittest.TestCase):
         """
         Test the creation of the graph from the pips file.
         """
-        # graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
         # Arrange
-        file = "tests/test_files/pips.txt"
+        file = os.path.join(os.path.dirname(__file__), "test_files", "pips.txt")
         tile = Tile(1, 1)
         mapping = Mapping()
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
