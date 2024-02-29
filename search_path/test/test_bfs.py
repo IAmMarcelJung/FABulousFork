@@ -7,12 +7,12 @@ import time
 # from unittest.mock import Mock
 # from unittest.mock import patch
 
-from search_path.utils import get_tiles_for_fabric, get_all_locations_of_tile_type
-from search_path.mapping import Mapping
-from search_path.tile import Tile, create_tile_from_string
-from search_path.bfs import bfs, get_lists_where_last_element_matches
-from search_path.node import NodeHeader
-from search_path.fasm_features import (
+from utils import get_tiles_for_fabric, get_all_locations_of_tile_type
+from mapping import Mapping
+from tile import Tile, create_tile_from_string
+from bfs import bfs, get_lists_where_last_element_matches
+from node import NodeHeader
+from fasm_features import (
     create_features_with_gnd_and_init,
     append_features_to_file,
 )

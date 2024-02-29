@@ -8,18 +8,18 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 from typing import Dict, List, Set
 
-from search_path.mapping import Mapping
-from search_path.node import NodeHeader
-from search_path.tile import Tile
-from search_path.bfs import bfs
-from search_path.graph import create_graph
-from search_path.utils import (
+from modules.mapping import Mapping
+from modules.node import NodeHeader
+from modules.tile import Tile
+from modules.bfs import bfs
+from modules.graph import create_graph
+from modules.utils import (
     get_all_locations_of_tile_type,
     get_tiles_for_fabric,
     convert_paths,
     sort_list_by_tile,
 )
-from search_path.fasm_features import (
+from modules.fasm_features import (
     append_features_to_file,
     create_features_with_gnd_and_init,
     create_features,

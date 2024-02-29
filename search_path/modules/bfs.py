@@ -3,10 +3,10 @@
 from typing import Dict, List, Set
 from collections import deque
 
-from search_path.node import NodeHeader
-from search_path.mapping import Mapping
-from search_path.utils import convert_paths
-from search_path.tile import Tile
+from modules.node import NodeHeader
+from modules.mapping import Mapping
+from modules.utils import convert_paths
+from modules.tile import Tile
 
 
 def print_nested_list(lst, mapping, depth=0):

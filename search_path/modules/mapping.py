@@ -1,5 +1,5 @@
 #!/bin/python
-from search_path.node import NodeHeader
+from modules.node import NodeHeader
 
 
 class Mapping:

@@ -3,8 +3,8 @@ import os
 import csv
 
 from typing import Dict, List
-from search_path.tile import Tile
-from search_path.mapping import Mapping
+from modules.tile import Tile
+from modules.mapping import Mapping
 
 
 def transpose_csv(input_file, output_file):

@@ -4,9 +4,9 @@ from typing import Dict, Set
 
 # import pdb; pdb.set_trace()
 
-from search_path.tile import Tile, create_tile_from_string
-from search_path.mapping import Mapping
-from search_path.node import NodeHeader, Node
+from modules.tile import Tile, create_tile_from_string
+from modules.mapping import Mapping
+from modules.node import NodeHeader, Node
 
 cpu_cores = max(multiprocessing.cpu_count(), 16)
 
