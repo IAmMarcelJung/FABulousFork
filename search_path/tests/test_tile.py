@@ -1,6 +1,6 @@
 import unittest
 
-from search_path.tile import Tile, create_tile_from_string
+from modules.tile import Tile, create_tile_from_string
 
 
 class TestTile(unittest.TestCase):

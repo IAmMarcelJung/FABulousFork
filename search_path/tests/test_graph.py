@@ -1,10 +1,10 @@
 #!/bin/python3
 import unittest
 
-from search_path.mapping import Mapping
-from search_path.tile import Tile
-from search_path.node import NodeHeader
-from search_path.graph import (
+from modules.mapping import Mapping
+from modules.tile import Tile
+from modules.node import NodeHeader
+from modules.graph import (
     get_nodes_from_file_for_tile,
     add_parents_and_children_for_tile,
 )
@@ -17,7 +17,7 @@ class TestGraph(unittest.TestCase):
         """
         # graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
         # Arrange
-        file = "tb_test/.FABulous/pips.txt"
+        file = "tests/test_files/pips.txt"
         tile = Tile(1, 1)
         mapping = Mapping()
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)

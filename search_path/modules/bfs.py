@@ -5,8 +5,6 @@ from collections import deque
 
 from modules.node import NodeHeader
 from modules.mapping import Mapping
-from modules.utils import convert_paths
-from modules.tile import Tile
 
 
 def print_nested_list(lst, mapping, depth=0):
@@ -31,6 +29,8 @@ def bfs(
     :param Node_Header start_node: The start node of the search.
     :param Node_Header end_node: The end node of the search.
     :param Mapping mapping: The mapping of UID to node header.
+    :param Set driven nodes: The nodes that are already driven/used by another signal.
+    :param int max_depth: The maximum depth for the breadth first search.
     :return: All paths with minimal length.
     :rtype: List
     """
@@ -47,7 +47,6 @@ def bfs(
     while current_node_uid != end_node_uid:
         if depth > max_depth:
             return []
-            break
         # paths.update({current_node_uid: [[current_node_uid]]})
         all_children = {
             *graph[current_node_uid].internal_children,
@@ -73,7 +72,6 @@ def bfs(
                     """
         if not queue:
             return []
-            break
         current_node_uid = queue.popleft()
         visited.add(current_node_uid)
 

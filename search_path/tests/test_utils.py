@@ -1,5 +1,5 @@
 import unittest
-from search_path.utils import get_all_locations_of_tile_type
+from modules.utils import get_all_locations_of_tile_type
 
 
 class TestGetAllLocationsOfTileType(unittest.TestCase):

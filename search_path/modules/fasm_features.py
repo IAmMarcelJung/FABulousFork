@@ -14,9 +14,9 @@ def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
     :rtype: List
     """
     feature_list = []
-    path = peekable(path)
-    for elem in path:
-        if path:
+    peekable_path = peekable(path)
+    for elem in peekable_path:
+        if peekable_path:
             tile = elem.tile
             tile_str = tile.to_string()
             source = elem.name
@@ -29,7 +29,7 @@ def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
                 gnd_feature = f"{tile_str}.GND0.B_T"
                 feature_list.append(gnd_feature)
 
-            next_elem = path.peek()
+            next_elem = peekable_path.peek()
             sink = next_elem.name
 
             # Add config bits
@@ -50,7 +50,7 @@ def create_features_with_gnd_and_init(path: List, used_tiles: Set) -> List:
     return feature_list
 
 
-def create_features(path: List, used_tiles: Set) -> List:
+def create_features(path: List) -> List:
     """Create the FASM features from the given path.
 
     :param List path: The path for which to create the FASM features.
@@ -58,14 +58,14 @@ def create_features(path: List, used_tiles: Set) -> List:
     :rtype: List
     """
     feature_list = []
-    path = peekable(path)
-    for elem in path:
-        if path:
+    peekable_path = peekable(path)
+    for elem in peekable_path:
+        if peekable_path:
             tile = elem.tile
             tile_str = tile.to_string()
             source = elem.name
 
-            next_elem = path.peek()
+            next_elem = peekable_path.peek()
             sink = next_elem.name
 
             feature = f"{tile_str}.{source}.{sink}"

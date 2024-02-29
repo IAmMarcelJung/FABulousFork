@@ -4,7 +4,6 @@ import argparse
 import os
 import pickle
 
-from joblib import Parallel, delayed
 from tqdm import tqdm
 from typing import Dict, List, Set
 
@@ -17,7 +16,6 @@ from modules.utils import (
     get_all_locations_of_tile_type,
     get_tiles_for_fabric,
     convert_paths,
-    sort_list_by_tile,
 )
 from modules.fasm_features import (
     append_features_to_file,
@@ -43,7 +41,7 @@ def parse_arguments():
     args = parser.parse_args()
 
     if not os.path.isdir(args.directory):
-        print(f"Error {directory_path} not found")
+        print(f"Error {args.directory} not found")
         exit(1)
     return args
 
@@ -132,7 +130,6 @@ def find_inverter_paths_in_tile(
     :param Dict graph: The graph containing all nodes.
     :param Mapping mapping: The mapping between UID and NodeHeader.
     """
-    previous_paths = []
     inverter_paths = []
     unrouted_paths = 0
     for lut in luts:
@@ -163,6 +160,7 @@ def find_enable_paths_in_tile(
     previous_paths: List,
 ):
     enable_paths = []
+    path = []
     for lut in luts:
         # Enable routing
         end = f"L{lut}_I0"
@@ -336,7 +334,7 @@ if __name__ == "__main__":
         features += create_features_with_gnd_and_init(path, used_tiles)
 
     for path in header_node_paths_enable:
-        features += create_features(path, used_tiles)
+        features += create_features(path)
 
     try:
         append_features_to_file(

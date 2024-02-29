@@ -6,30 +6,28 @@ import time
 # import cProfile
 # from unittest.mock import Mock
 # from unittest.mock import patch
-
-from utils import get_tiles_for_fabric, get_all_locations_of_tile_type
-from mapping import Mapping
-from tile import Tile, create_tile_from_string
-from bfs import bfs, get_lists_where_last_element_matches
-from node import NodeHeader
-from fasm_features import (
+from context import modules
+from modules.utils import get_tiles_for_fabric, get_all_locations_of_tile_type
+from modules.mapping import Mapping
+from modules.tile import Tile
+from modules.bfs import bfs, get_lists_where_last_element_matches
+from modules.node import NodeHeader
+from modules.fasm_features import (
     create_features_with_gnd_and_init,
     append_features_to_file,
 )
-from search_path.graph import (
-    get_nodes_from_file,
-    get_nodes_from_file_for_tile,
-    add_parents_and_children_for_tile,
+from modules.graph import (
     create_graph,
 )
 
 test_file = "test_features.txt"
-fabric_file = "search_path/fabric.csv"
+fabric_file = "tests/test_files/fabric.csv"
+default_max_depth = 15
 
 
 class TestBfs(unittest.TestCase):
     graph = {}
-    file = "tb_test/.FABulous/pips.txt"
+    file = "tests/test_files/pips.txt"
     mapping = Mapping()
     graph = create_graph(file, mapping)
 
@@ -79,7 +77,9 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(self.graph, start_node, end_node, self.mapping)
+        paths = bfs(
+            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
+        )
 
         print(f"expected paths: {paths}")
         print(f"Target path: {target_path}")
@@ -109,7 +109,9 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(self.graph, start_node, end_node, self.mapping)
+        paths = bfs(
+            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
+        )
 
         # Assert
         # for path in paths:
@@ -138,7 +140,9 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(self.graph, start_node, end_node, self.mapping)
+        paths = bfs(
+            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
+        )
 
         # Assert
         # for path in paths:
@@ -160,7 +164,9 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(self.graph, start_node, end_node, self.mapping)
+        paths = bfs(
+            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
+        )
 
         # Assert
         # for path in paths:
@@ -192,7 +198,9 @@ class TestBfs(unittest.TestCase):
         target_path = self.mapping.node_header_path_to_uid(target_path)
 
         # Act
-        paths = bfs(self.graph, start_node, end_node, self.mapping)
+        paths = bfs(
+            self.graph, start_node, end_node, self.mapping, set(), default_max_depth
+        )
 
         # Assert
         # for path in paths:
@@ -236,9 +244,9 @@ class TestBfs(unittest.TestCase):
             NodeHeader(name="J_l_AB_END3", tile=Tile(x=1, y=1)),
             NodeHeader(name="LA_I3", tile=Tile(x=1, y=1)),
         ]
+
+        # No IO tile, do not add GND
         target_features = [
-            "X1Y1.GND0.A_T",
-            "X1Y1.GND0.B_T",
             "X1Y1.LA_O.JW2BEG1",
             "X1Y1.JW2BEG1.JW2END1",
             "X1Y1.JW2END1.J_l_AB_BEG3",
@@ -292,7 +300,7 @@ class TestBfs(unittest.TestCase):
                     index += 1
                 if line.startswith("#additional features"):
                     if start_found:
-                        assertFalse(
+                        self.assertFalse(
                             start_found,
                             "Found multiple lines containing '#additional features'",
                         )
