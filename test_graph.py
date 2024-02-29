@@ -4,17 +4,21 @@ import unittest
 from search_path.mapping import Mapping
 from search_path.tile import Tile
 from search_path.node import NodeHeader
-from search_path.graph import get_nodes_from_file_for_tile, add_parents_and_children_for_tile
+from search_path.graph import (
+    get_nodes_from_file_for_tile,
+    add_parents_and_children_for_tile,
+)
+
 
 class TestGraph(unittest.TestCase):
     def test_create_graph_from_file(self):
         """
         Test the creation of the graph from the pips file.
         """
-        #graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
-        #Arrange
+        # graph = create_graph_from_file("tb_test/.FABulous/pips.txt")
+        # Arrange
         file = "tb_test/.FABulous/pips.txt"
-        tile = Tile(1,1)
+        tile = Tile(1, 1)
         mapping = Mapping()
         nodes = get_nodes_from_file_for_tile(file, tile, mapping)
         nodes = add_parents_and_children_for_tile(file, tile, nodes, mapping)
@@ -27,7 +31,7 @@ class TestGraph(unittest.TestCase):
         node_5 = mapping.node_header_to_uid[NodeHeader("LA_I3", tile)]
 
         found_target = False
-        #Act
+        # Act
         if node_1 in nodes[node_0].internal_children:
             if node_2 in nodes[node_1].internal_children:
                 if node_3 in nodes[node_2].internal_children:
@@ -35,11 +39,10 @@ class TestGraph(unittest.TestCase):
                         if node_5 in nodes[node_4].internal_children:
                             found_target = True
         final_node = mapping.uid_to_node_header[node_5]
-        #Assert
+        # Assert
         self.assertTrue(found_target)
         self.assertEqual("LA_I3", final_node.name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

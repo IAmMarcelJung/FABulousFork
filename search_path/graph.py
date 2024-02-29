@@ -2,13 +2,14 @@
 import multiprocessing
 from typing import Dict, Set
 
-#import pdb; pdb.set_trace()
+# import pdb; pdb.set_trace()
 
 from search_path.tile import Tile, create_tile_from_string
 from search_path.mapping import Mapping
 from search_path.node import NodeHeader, Node
 
 cpu_cores = max(multiprocessing.cpu_count(), 16)
+
 
 def get_nodes_from_file_for_tile(pip_file: str, tile: Tile, mapping: Mapping) -> Set:
     """Extract all nodes for the given tile from a given pip file.
@@ -26,14 +27,16 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile, mapping: Mapping) ->
     with open(pip_file) as f:
         for line in f:
             # Reached features of next tile, all features of current tile read
-            if line.startswith('#') and reached_current_tile and tile_str not in line:
+            if line.startswith("#") and reached_current_tile and tile_str not in line:
                 break
             # Reached features of the current tile
-            if reached_current_tile or (tile_str in line and line.startswith('#')):
+            if reached_current_tile or (tile_str in line and line.startswith("#")):
                 reached_current_tile = True
-                if not line.startswith('#'):
+                if not line.startswith("#"):
                     # Do not use cost for now since its the same for all connections
-                    source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
+                    source_tile, source_name, sink_tile, sink_name, cost, feature = (
+                        line.split(",")
+                    )
                     source_tile = create_tile_from_string(source_tile)
                     sink_tile = create_tile_from_string(sink_tile)
                     source_node = NodeHeader(source_name, source_tile)
@@ -45,6 +48,7 @@ def get_nodes_from_file_for_tile(pip_file: str, tile: Tile, mapping: Mapping) ->
                         nodes.add(uid)
                         uid += 1
     return nodes
+
 
 def get_nodes_from_file(pip_file: str, mapping: Mapping) -> Set:
     """Extract all nodes from a given pip file.
@@ -58,9 +62,11 @@ def get_nodes_from_file(pip_file: str, mapping: Mapping) -> Set:
     uid = 0
     with open(pip_file) as f:
         for line in f:
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 # Do not use cost for now since its the same for all connections
-                source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
+                source_tile, source_name, sink_tile, sink_name, cost, feature = (
+                    line.split(",")
+                )
                 source_tile = create_tile_from_string(source_tile)
                 sink_tile = create_tile_from_string(sink_tile)
                 source_node = NodeHeader(source_name, source_tile)
@@ -73,7 +79,10 @@ def get_nodes_from_file(pip_file: str, mapping: Mapping) -> Set:
                     uid += 1
     return nodes
 
-def add_parents_and_children_for_tile(pip_file: str, tile: Tile, nodes_set: Set, mapping: Mapping) -> Dict:
+
+def add_parents_and_children_for_tile(
+    pip_file: str, tile: Tile, nodes_set: Set, mapping: Mapping
+) -> Dict:
     """Add the parent and the child nodes to all nodes.
 
     :param str pip_file: The pip file where to extract the child and parent nodes from.
@@ -89,14 +98,16 @@ def add_parents_and_children_for_tile(pip_file: str, tile: Tile, nodes_set: Set,
     with open(pip_file) as f:
         for line in f:
             # Reached features of next tile, all features of current tile read
-            if line.startswith('#') and reached_current_tile and tile_str not in line:
+            if line.startswith("#") and reached_current_tile and tile_str not in line:
                 break
             # Reached features of the current tile
-            if reached_current_tile or (tile_str in line and line.startswith('#')):
+            if reached_current_tile or (tile_str in line and line.startswith("#")):
                 reached_current_tile = True
-                if not line.startswith('#'):
+                if not line.startswith("#"):
                     # Do not use cost for now since its the same for all connections
-                    source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
+                    source_tile, source_name, sink_tile, sink_name, cost, feature = (
+                        line.split(",")
+                    )
                     source_tile = create_tile_from_string(source_tile)
                     sink_tile = create_tile_from_string(sink_tile)
 
@@ -114,6 +125,7 @@ def add_parents_and_children_for_tile(pip_file: str, tile: Tile, nodes_set: Set,
                         nodes[source_id].internal_children.add(sink_id)
     return nodes
 
+
 def add_parents_and_children(pip_file: str, nodes_set: Set, mapping: Mapping) -> Dict:
     """Add the parent and the child nodes to all nodes.
 
@@ -126,9 +138,11 @@ def add_parents_and_children(pip_file: str, nodes_set: Set, mapping: Mapping) ->
     graph = {key: Node() for key in nodes_set}
     with open(pip_file) as f:
         for line in f:
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 # Do not use cost for now since its the same for all connections
-                source_tile, source_name, sink_tile, sink_name, cost, feature = line.split(',')
+                source_tile, source_name, sink_tile, sink_name, cost, feature = (
+                    line.split(",")
+                )
                 source_tile = create_tile_from_string(source_tile)
                 sink_tile = create_tile_from_string(sink_tile)
 
@@ -151,6 +165,7 @@ def add_parents_and_children(pip_file: str, nodes_set: Set, mapping: Mapping) ->
 
     return graph
 
+
 def create_graph(pip_file: str, mapping: Mapping) -> Dict:
     """
     Create the connection graph.
@@ -161,6 +176,7 @@ def create_graph(pip_file: str, mapping: Mapping) -> Dict:
     nodes = get_nodes_from_file(pip_file, mapping)
     graph = add_parents_and_children(pip_file, nodes, mapping)
     return graph
+
 
 if __name__ == "__main__":
     pass
